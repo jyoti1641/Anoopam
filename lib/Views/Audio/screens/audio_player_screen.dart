@@ -929,22 +929,17 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                 ProcessingState.buffering;
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text('Audio Playing Full View'),
-        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.more_vert),
-            onPressed: () {
-              // Implement more options menu (e.g., add to playlist, download)
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('More options coming soon!')),
-              );
-            },
+            onPressed: () {},
           ),
         ],
       ),
@@ -1065,20 +1060,24 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      IconButton(
-                        icon: Icon(
-                          Icons.shuffle,
-                          color: _isShuffleEnabled
-                              ? Theme.of(context).primaryColor
-                              : Colors.grey[600],
+                      Expanded(
+                        child: IconButton(
+                          icon: Icon(
+                            Icons.shuffle,
+                            color: _isShuffleEnabled
+                                ? Theme.of(context).primaryColor
+                                : Colors.grey[600],
+                          ),
+                          iconSize: 28.0,
+                          onPressed: _toggleShuffle,
                         ),
-                        iconSize: 28.0,
-                        onPressed: _toggleShuffle,
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.skip_previous),
-                        iconSize: 48.0,
-                        onPressed: _skipToPrevious,
+                      Expanded(
+                        child: IconButton(
+                          icon: const Icon(Icons.skip_previous),
+                          iconSize: 48.0,
+                          onPressed: _skipToPrevious,
+                        ),
                       ),
                       Container(
                         decoration: BoxDecoration(
@@ -1103,25 +1102,29 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                                 onPressed: _togglePlayPause,
                               ),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.skip_next),
-                        iconSize: 48.0,
-                        onPressed: _skipToNext,
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          _loopMode == LoopMode.off
-                              ? Icons.repeat
-                              : _loopMode == LoopMode.all
-                                  ? Icons.repeat_on
-                                  : Icons
-                                      .repeat_one_on, // repeat_one_on for LoopMode.one
-                          color: _loopMode != LoopMode.off
-                              ? Theme.of(context).primaryColor
-                              : Colors.grey[600],
+                      Expanded(
+                        child: IconButton(
+                          icon: const Icon(Icons.skip_next),
+                          iconSize: 48.0,
+                          onPressed: _skipToNext,
                         ),
-                        iconSize: 28.0,
-                        onPressed: _toggleRepeat,
+                      ),
+                      Expanded(
+                        child: IconButton(
+                          icon: Icon(
+                            _loopMode == LoopMode.off
+                                ? Icons.repeat
+                                : _loopMode == LoopMode.all
+                                    ? Icons.repeat_on
+                                    : Icons
+                                        .repeat_one_on, // repeat_one_on for LoopMode.one
+                            color: _loopMode != LoopMode.off
+                                ? Theme.of(context).primaryColor
+                                : Colors.grey[600],
+                          ),
+                          iconSize: 28.0,
+                          onPressed: _toggleRepeat,
+                        ),
                       ),
                     ],
                   ),

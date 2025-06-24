@@ -162,7 +162,9 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
         title: Text(
             widget.songToAdd != null ? 'Add to Playlist' : 'Manage Playlists'),
       ),

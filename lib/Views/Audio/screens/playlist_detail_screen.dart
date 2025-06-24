@@ -19,7 +19,9 @@ class PlaylistDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final PlaylistService _playlistService = PlaylistService();
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
         title: Text(playlist.name),
         actions: [
           // Optional: Add an option to delete the playlist
