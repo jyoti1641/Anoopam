@@ -1,0 +1,66 @@
+{
+  "app": {
+    "title": "Anoopam Mission",
+    "welcome": "Welcome to Anoopam Mission"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "signup": "Sign Up",
+    "email": "Email",
+    "password": "Password"
+  },
+  "navigation": {
+    "home": "Home",
+    "audio": "Audio",
+    "video": "Video",
+    "live_event": "Live Event",
+    "wallpapers": "Wallpapers",
+    "sadhana_tracker": "Sadhana Tracker",
+    "gallery": "Gallery",
+    "daily_quotes": "Daily Quotes",
+    "amrutvachan": "Amrutvachan",
+    "thakorji_darshan": "Thakorji Darshan",
+    "mantralekhan": "Mantralekhan",
+    "reading": "Reading",
+    "calendar": "Calendar",
+    "settings": "Settings",
+    "more_options": "More Options"
+  },
+  "features": {
+    "audio": {
+      "play": "Play",
+      "pause": "Pause",
+      "next": "Next",
+      "previous": "Previous",
+      "shuffle": "Shuffle",
+      "repeat": "Repeat",
+      "download": "Download",
+      "favorite": "Favorite",
+      "share": "Share"
+    },
+    "gallery": {
+      "filter": "Filter",
+      "sort": "Sort",
+      "view": "View",
+      "download": "Download",
+      "share": "Share"
+    },
+    "video": {
+      "play": "Play",
+      "pause": "Pause",
+      "fullscreen": "Fullscreen",
+      "quality": "Quality",
+      "download": "Download",
+      "share": "Share"
+    }
+  }
+} 
