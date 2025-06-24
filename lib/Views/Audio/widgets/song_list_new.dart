@@ -264,7 +264,7 @@ class _SongListState extends State<SongList> {
       context,
       MaterialPageRoute(
         builder: (context) => PlaylistManagerPage(
-          songToAdd: song,
+          songsToAdd: [song],
           playlistService: widget.playlistService,
           onPlaylistsUpdated: widget.onFavoritesUpdated,
         ),

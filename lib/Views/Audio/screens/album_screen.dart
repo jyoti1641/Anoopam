@@ -74,7 +74,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => PlaylistManagerPage(
-          songToAdd: null, // Pass null as we are creating a new empty playlist
+          songsToAdd: null, // Pass null as we are creating a new empty playlist
           playlistService: _playlistService,
           onPlaylistsUpdated:
               _refreshAllData, // Refresh albums and playlists after creation

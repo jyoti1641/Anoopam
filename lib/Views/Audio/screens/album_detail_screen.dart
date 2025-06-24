@@ -2,6 +2,10 @@
 import 'package:anoopam_mission/Views/Audio/models/album.dart';
 import 'package:anoopam_mission/Views/Audio/models/song.dart';
 import 'package:anoopam_mission/Views/Audio/services/album_service_new.dart';
+import 'package:anoopam_mission/Views/Audio/screens/playlist_manager.dart';
+import 'package:anoopam_mission/Views/Audio/services/audio_service_new.dart';
+import 'package:anoopam_mission/Views/Audio/services/playlist_service.dart';
+import 'package:anoopam_mission/Views/Audio/widgets/song_list_new.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart'; // Import the share_plus package
 // Import the single consolidated file that contains AudioPlayerScreen and all its dependencies.
@@ -76,6 +80,21 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
 
   // Widget to build the content of the album bottom sheet
   Widget _buildAlbumBottomSheet(BuildContext context, List<AudioModel> songs) {
+    void _addSongsToPlaylist(List<AudioModel> songs) async {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PlaylistManagerPage(
+            songsToAdd: songs,
+            playlistService: PlaylistService(),
+            // onPlaylistsUpdated: widget.onFavoritesUpdated,
+          ),
+        ),
+      ).then((_) {
+        // _initializeFavoriteStatus();
+      });
+    }
+
     return SingleChildScrollView(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -166,12 +185,13 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
             title: const Text('Add to a Playlist'), // Changed text for clarity
             onTap: () {
               Navigator.pop(context); // Close the bottom sheet
+              _addSongsToPlaylist(songs);
               // Implement add to playlist logic here (e.g., show another dialog to select playlist)
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                    content: Text(
-                        'Please select a playlist to add songs from "${widget.album.title}" (Placeholder)')),
-              );
+              // ScaffoldMessenger.of(context).showSnackBar(
+              //   SnackBar(
+              //       content: Text(
+              //           'Please select a playlist to add songs from "${widget.album.title}" (Placeholder)')),
+              // );
               // Example: Assuming PlaylistService has a method to add multiple songs
               // PlaylistService().addSongsToPlaylist(songs);
             },

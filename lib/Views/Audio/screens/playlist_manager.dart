@@ -4,13 +4,14 @@ import 'package:anoopam_mission/Views/Audio/models/song.dart';
 import 'package:anoopam_mission/Views/Audio/services/playlist_service.dart';
 
 class PlaylistManagerPage extends StatefulWidget {
-  final AudioModel? songToAdd; // Nullable, if coming from "add to playlist"
+  final List<AudioModel>?
+      songsToAdd; // Nullable, if coming from "add to playlist"
   final PlaylistService playlistService;
   final VoidCallback? onPlaylistsUpdated; // Callback for when playlists change
 
   const PlaylistManagerPage({
     super.key,
-    this.songToAdd,
+    this.songsToAdd,
     required this.playlistService,
     this.onPlaylistsUpdated,
   });
@@ -89,17 +90,12 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
         return;
       }
       try {
-        // await widget.playlistService.addSongToPlaylist(
-        //     newPlaylistName,
-        //     AudioModel(
-        //       title: 'Placeholder',
-        //       songUrl: 'http://dummy.url',
-        //       imageUrl: 'http://dummy.url',
-        //     ));
+        await widget.playlistService
+            .addSongsToPlaylist(newPlaylistName, widget.songsToAdd ?? []);
         _newPlaylistNameController.clear();
-        _loadUserPlaylists();
         _showSnackBar('Playlist "$newPlaylistName" created!');
         widget.onPlaylistsUpdated?.call();
+        _loadUserPlaylists();
       } catch (e) {
         _showSnackBar('Error creating playlist: $e');
       }
@@ -107,13 +103,14 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
   }
 
   Future<void> _addSongToExistingPlaylist(Playlist playlist) async {
-    if (widget.songToAdd != null) {
+    if (widget.songsToAdd != null) {
       try {
-        await widget.playlistService.addSongToPlaylist(
+        await widget.playlistService.addSongsToPlaylist(
           playlist.name,
-          widget.songToAdd!,
+          widget.songsToAdd ?? [],
         );
-        _showSnackBar('${widget.songToAdd!.title} added to ${playlist.name}!');
+        final songNames = widget.songsToAdd?.map((e) => e.title) ?? [];
+        _showSnackBar('${songNames.join(', ')} added to ${playlist.name}!');
         widget.onPlaylistsUpdated?.call();
         Navigator.of(context).pop(); // Go back after adding
       } catch (e) {
@@ -166,7 +163,7 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         title: Text(
-            widget.songToAdd != null ? 'Add to Playlist' : 'Manage Playlists'),
+            widget.songsToAdd != null ? 'Add to Playlist' : 'Manage Playlists'),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -211,7 +208,7 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    if (widget.songToAdd != null)
+                                    if (widget.songsToAdd != null)
                                       IconButton(
                                         icon: const Icon(Icons.add),
                                         onPressed: () =>
