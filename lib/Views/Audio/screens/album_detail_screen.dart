@@ -157,29 +157,20 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
             ),
           ),
           const Divider(),
-          // New "Play All" button in the bottom sheet
-          ListTile(
-            leading: const Icon(Icons.play_arrow),
-            title: const Text('Play All Songs'),
-            onTap: () {
-              Navigator.pop(context); // Close the bottom sheet
-              _playAllSongs(
-                  context, songs); // Call the existing play all function
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.download),
-            title: const Text('Download Album'),
-            onTap: () {
-              Navigator.pop(context); // Close the bottom sheet
-              // Implement download logic here
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                    content: Text(
-                        'Downloading album "${widget.album.title}"... (Placeholder)')),
-              );
-            },
-          ),
+
+          // ListTile(
+          //   leading: const Icon(Icons.download),
+          //   title: const Text('Download Album'),
+          //   onTap: () {
+          //     Navigator.pop(context); // Close the bottom sheet
+          //     // Implement download logic here
+          //     ScaffoldMessenger.of(context).showSnackBar(
+          //       SnackBar(
+          //           content: Text(
+          //               'Downloading album "${widget.album.title}"... (Placeholder)')),
+          //     );
+          //   },
+          // ),
           ListTile(
             leading: const Icon(Icons.playlist_add),
             title: const Text('Add to a Playlist'), // Changed text for clarity
