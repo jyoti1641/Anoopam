@@ -6,12 +6,12 @@ import 'package:easy_localization/easy_localization.dart';
 
 class FullScreenImageAppBar extends StatelessWidget
     implements PreferredSizeWidget {
-  final String title;
+  // final String title;
   final String imageUrl;
 
   const FullScreenImageAppBar({
     super.key,
-    required this.title,
+    // required this.title,
     required this.imageUrl,
   });
 

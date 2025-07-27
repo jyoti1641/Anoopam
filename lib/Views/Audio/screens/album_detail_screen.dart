@@ -46,10 +46,13 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
       return;
     }
 
+     
+
     // Call your actual audio player service to start playing the list.
     // This assumes AlbumServiceNew.instance.startPlaylist(songs) would internally
     // trigger playback in AudioServiceNew. For navigation, we directly go to the player.
     AlbumServiceNew.instance.startPlaylist(songs); // Use your AlbumServiceNew
+    AlbumServiceNew.instance.setRecentAlbum(widget.album);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -122,9 +125,13 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                       return Container(
                         width: 80,
                         height: 80,
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.album,
-                            size: 50, color: Colors.grey),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest,
+                        child: Icon(Icons.album,
+                            size: 50,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant),
                       );
                     },
                   ),
@@ -136,9 +143,10 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                     children: [
                       Text(
                         widget.album.title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 20.0,
                           fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -148,7 +156,10 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                         widget.album.artist,
                         style: TextStyle(
                           fontSize: 16.0,
-                          color: Colors.grey[700],
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.7),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -206,16 +217,24 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         title: _isSearching
             ? TextField(
                 controller: _searchController,
-                style: const TextStyle(color: Colors.black, fontSize: 17),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 17,
+                ),
                 decoration: InputDecoration(
                   hintText: 'album.searchSongs'.tr(),
-                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  hintStyle: TextStyle(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.6),
+                  ),
                   border: InputBorder.none,
                 ),
                 onChanged: (value) {
@@ -226,8 +245,11 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
               )
             : Text(
                 widget.album.title,
-                style:
-                    const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
         centerTitle: true,
         actions: [
@@ -277,7 +299,12 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
               return Center(
                 child: Text(
                   'album.noSongsMatch'.tr(namedArgs: {'query': _searchQuery}),
-                  style: const TextStyle(color: Colors.grey),
+                  style: TextStyle(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.6),
+                  ),
                 ),
               );
             }
@@ -302,9 +329,14 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                         return Container(
                           width: double.infinity,
                           height: 250,
-                          color: Colors.grey[300],
-                          child: const Icon(Icons.album,
-                              size: 150, color: Colors.grey),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest,
+                          child: Icon(Icons.album,
+                              size: 150,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant),
                         );
                       },
                     ),
@@ -320,9 +352,10 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                       Expanded(
                         child: Text(
                           widget.album.title,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 20.0,
                             fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -341,7 +374,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                           // Play All Button (visible directly on the screen)
                           IconButton(
                             icon: const Icon(Icons.play_circle_fill),
-                            color: Theme.of(context).primaryColor,
+                            color: Colors.indigo,
                             iconSize: 40.0,
                             onPressed: () => _playAllSongs(context, songs),
                           ),
@@ -359,6 +392,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                   playlistService: PlaylistService(),
                   // When a song is tapped in SongList, navigate to AudioPlayerScreen
                   onSongTap: (int tappedIndex) {
+                    AlbumServiceNew.instance.setRecentAlbum(widget.album);
                     Navigator.push(
                       context,
                       MaterialPageRoute(

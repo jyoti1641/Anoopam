@@ -140,7 +140,7 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
             ),
             TextButton(
               child: Text('playlist.delete'.tr(),
-                  style: TextStyle(color: Colors.red)),
+                  style: TextStyle(color: Theme.of(context).colorScheme.error)),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -166,12 +166,17 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: Text(widget.songsToAdd != null
-            ? 'playlist.addTo'.tr()
-            : 'playlist.manage'.tr()),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: Text(
+          widget.songsToAdd != null
+              ? 'playlist.addTo'.tr()
+              : 'playlist.manage'.tr(),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -194,7 +199,10 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
                       ? Center(
                           child: Text(
                             'playlist.noneFound'.tr(),
-                            style: TextStyle(fontSize: 16),
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                         )
@@ -227,8 +235,10 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
                                         tooltip: 'playlist.addSongTooltip'.tr(),
                                       ),
                                     IconButton(
-                                      icon: const Icon(Icons.delete,
-                                          color: Colors.red),
+                                      icon: Icon(Icons.delete,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .error),
                                       onPressed: () =>
                                           _deletePlaylist(playlist.name),
                                       tooltip: 'playlist.deleteTooltip'.tr(),

@@ -54,7 +54,7 @@ class _LoginScreenState extends State<LoginScreen1> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xffffffff),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: Align(
         alignment: Alignment.center,
         child: Padding(
@@ -91,11 +91,11 @@ class _LoginScreenState extends State<LoginScreen1> {
                     'auth.signIn'.tr(),
                     textAlign: TextAlign.start,
                     overflow: TextOverflow.clip,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontStyle: FontStyle.normal,
                       fontSize: 24,
-                      color: Color(0xff000000),
+                      color: Theme.of(context).colorScheme.onBackground,
                     ),
                   ),
                 ),
@@ -106,40 +106,40 @@ class _LoginScreenState extends State<LoginScreen1> {
                   obscureText: false,
                   textAlign: TextAlign.start,
                   maxLines: 1,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w400,
                     fontStyle: FontStyle.normal,
                     fontSize: 16,
-                    color: Color(0xff000000),
+                    color: Theme.of(context).colorScheme.onBackground,
                   ),
                   decoration: InputDecoration(
                     disabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(4.0),
-                      borderSide: const BorderSide(
-                        color: Colors.black,
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.onBackground,
                         width: 1,
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(4.0),
-                      borderSide: const BorderSide(
-                        color: Colors.black,
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.onBackground,
                         width: 1,
                       ),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(4.0),
-                      borderSide: const BorderSide(
-                        color: Colors.black,
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.onBackground,
                         width: 1,
                       ),
                     ),
                     labelText: 'auth.email'.tr(),
-                    labelStyle: const TextStyle(
+                    labelStyle: TextStyle(
                       fontWeight: FontWeight.w400,
                       fontStyle: FontStyle.normal,
                       fontSize: 18,
-                      color: Colors.black,
+                      color: Theme.of(context).colorScheme.onBackground,
                     ),
                     filled: true,
                     fillColor: const Color(0x00f2f2f3),
@@ -156,40 +156,40 @@ class _LoginScreenState extends State<LoginScreen1> {
                   obscureText: _obscureText, // Controlled by state
                   textAlign: TextAlign.start,
                   maxLines: 1,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w400,
                     fontStyle: FontStyle.normal,
                     fontSize: 18,
-                    color: Color(0xff000000),
+                    color: Theme.of(context).colorScheme.onBackground,
                   ),
                   decoration: InputDecoration(
                     disabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(4.0),
-                      borderSide: const BorderSide(
-                        color: Colors.black,
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.onBackground,
                         width: 1,
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(4.0),
-                      borderSide: const BorderSide(
-                        color: Colors.black,
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.onBackground,
                         width: 1,
                       ),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(4.0),
-                      borderSide: const BorderSide(
-                        color: Colors.black,
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.onBackground,
                         width: 1,
                       ),
                     ),
                     labelText: 'auth.enterPassword'.tr(),
-                    labelStyle: const TextStyle(
+                    labelStyle: TextStyle(
                       fontWeight: FontWeight.w400,
                       fontStyle: FontStyle.normal,
                       fontSize: 18,
-                      color: Colors.black,
+                      color: Theme.of(context).colorScheme.onBackground,
                     ),
                     filled: true,
                     fillColor: const Color(0x00f2f2f3),
@@ -222,11 +222,11 @@ class _LoginScreenState extends State<LoginScreen1> {
                             "auth.rememberMe".tr(),
                             textAlign: TextAlign.start,
                             overflow: TextOverflow.clip,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.w400,
                               fontStyle: FontStyle.normal,
                               fontSize: 14,
-                              color: Colors.black,
+                              color: Theme.of(context).colorScheme.onBackground,
                             ),
                           ),
                         ],
@@ -336,7 +336,7 @@ class _LoginScreenState extends State<LoginScreen1> {
                             fontWeight: FontWeight.w400,
                             fontStyle: FontStyle.normal,
                             fontSize: 14,
-                            color: Colors.black,
+                            color: Theme.of(context).colorScheme.onBackground,
                           ),
                         ),
                       ),
@@ -396,7 +396,7 @@ class _LoginScreenState extends State<LoginScreen1> {
                                   "auth.email".tr(),
                                   textAlign: TextAlign.start,
                                   overflow: TextOverflow.clip,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.w400,
                                     fontStyle: FontStyle.normal,
                                     fontSize: 14,
@@ -446,7 +446,7 @@ class _LoginScreenState extends State<LoginScreen1> {
                                   "auth.google".tr(),
                                   textAlign: TextAlign.start,
                                   overflow: TextOverflow.clip,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.w400,
                                     fontStyle: FontStyle.normal,
                                     fontSize: 14,
@@ -496,7 +496,7 @@ class _LoginScreenState extends State<LoginScreen1> {
                                   "auth.apple".tr(),
                                   textAlign: TextAlign.start,
                                   overflow: TextOverflow.clip,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.w400,
                                     fontStyle: FontStyle.normal,
                                     fontSize: 14,

@@ -176,31 +176,26 @@ class _PhotoGridScreenState extends State<PhotoGridScreen> {
     });
   }
 
-  void _showFilterDialog(BuildContext context) {
+  Widget _buildFilterBar() {
     // Get unique countries and states from _allPhotos for filter options
     final List<String> uniqueCountries =
         {'All', ..._allPhotos.map((photo) => photo.country)}.toList()..sort();
     final List<String> uniqueStates =
         {'All', ..._allPhotos.map((photo) => photo.state)}.toList()..sort();
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return FilterDialog(
-          countries: uniqueCountries,
-          states: uniqueStates,
-          initialCountry: _selectedCountry,
-          initialState: _selectedState,
-          initialLastUpdated: _selectedLastUpdated,
-          onApply: (country, state, lastUpdated) {
-            setState(() {
-              _selectedCountry = country;
-              _selectedState = state;
-              _selectedLastUpdated = lastUpdated;
-            });
-            _applyFilters(); // Apply new filters
-          },
-        );
+    return FilterBar(
+      countries: uniqueCountries,
+      states: uniqueStates,
+      initialCountry: _selectedCountry,
+      initialState: _selectedState,
+      initialLastUpdated: _selectedLastUpdated,
+      onApply: (country, state, lastUpdated) {
+        setState(() {
+          _selectedCountry = country;
+          _selectedState = state;
+          _selectedLastUpdated = lastUpdated;
+        });
+        _applyFilters(); // Apply new filters
       },
     );
   }
@@ -224,18 +219,6 @@ class _PhotoGridScreenState extends State<PhotoGridScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.albumName), // Only album name in the app bar
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: () => _showFilterDialog(context),
-          ),
-          if (_areFiltersActive)
-            IconButton(
-              icon: const Icon(Icons.clear),
-              onPressed: _clearFilters,
-              tooltip: 'Clear Filters',
-            ),
-        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -244,9 +227,13 @@ class _PhotoGridScreenState extends State<PhotoGridScreen> {
               : Column(
                   // Use a Column for the body to stack widgets
                   children: [
-                    // Display filter status at the top of the body
+                    // Inline Filter Bar
+                    _buildFilterBar(),
+
+                    // Display filter status below the filter bar
                     Padding(
-                      padding: const EdgeInsets.all(20.0),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20.0, vertical: 8.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -266,6 +253,7 @@ class _PhotoGridScreenState extends State<PhotoGridScreen> {
                         ],
                       ),
                     ),
+
                     // The rest of the body content (GridView.builder)
                     Expanded(
                       // Wrap GridView.builder in Expanded to fill remaining space

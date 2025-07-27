@@ -1,4 +1,6 @@
 import 'package:anoopam_mission/Views/Profile/profile_screen.dart';
+import 'package:anoopam_mission/Views/Search/search_screen.dart';
+import 'package:anoopam_mission/Views/Notification/notification_screen.dart';
 import 'package:anoopam_mission/widgets/activities_section.dart';
 import 'package:anoopam_mission/widgets/amrut_vachan_section.dart';
 import 'package:anoopam_mission/widgets/latest_audio_section.dart';
@@ -10,9 +12,33 @@ import 'package:anoopam_mission/widgets/main_image_carousel.dart';
 import 'package:anoopam_mission/widgets/home_action_button.dart'; // Make sure this import matches your file name (singular 'button')
 import 'package:anoopam_mission/widgets/sahebjji_ma_bole_section.dart';
 import 'package:anoopam_mission/widgets/donate_now_button.dart';
+import 'package:anoopam_mission/widgets/notification_popup.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  bool _hasShownPopup = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_hasShownPopup) {
+        setState(() {
+          _hasShownPopup = true;
+        });
+        showDialog(
+          context: context,
+          builder: (_) => const NotificationPopup(),
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,10 +47,16 @@ class HomeScreen extends StatelessWidget {
       appBar: HomePageAppBar(
         logo: const AssetImage('assets/logos/Mission.png'),
         onSearchPressed: () {
-          print('Search icon pressed!');
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const SearchScreen()),
+          );
         },
         onNotificationsPressed: () {
-          print('Notifications icon pressed!');
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const NotificationScreen()),
+          );
         },
         onProfilePressed: () {
           Navigator.push(
@@ -49,7 +81,7 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             // The "Sahebjji Ma Bole Shree Hari Re" section
-            const SahebjjiMaBoleSection(),
+            SahebjjiMaBoleSection(),
             const SizedBox(height: 16),
 
             // The "Vandan Sahebjji" section

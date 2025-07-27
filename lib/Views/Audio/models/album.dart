@@ -6,6 +6,8 @@ class AlbumModel {
   final String title; // Maps to albumName in your API
   final String albumArt; // Maps to albumCover in your API
   final String artist;
+  final String albumDuration; // Maps to album_duration in your API
+  final String albumDate; // Maps to album_date in your API
   final List<AudioModel> songs; // List of songs within this album
 
   AlbumModel({
@@ -13,6 +15,8 @@ class AlbumModel {
     required this.title,
     required this.albumArt,
     required this.artist,
+    required this.albumDuration,
+    required this.albumDate,
     required this.songs,
   });
 
@@ -29,6 +33,10 @@ class AlbumModel {
       albumArt: json['albumCover']
           as String, // Map 'albumCover' from API to 'albumArt'
       artist: json['artist'] as String,
+      albumDuration: json['album_duration']
+          as String, // Map 'album_duration' from API to 'albumDuration'
+      albumDate: json['album_date']
+          as String, // Map 'album_date' from API to 'albumDate'
       songs: parsedSongs,
     );
   }

@@ -3,6 +3,8 @@ import 'package:anoopam_mission/models/album.dart';
 import 'package:anoopam_mission/widgets/album_card.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:provider/provider.dart';
+import '../../providers/theme_provider.dart';
 
 import 'photo_grid_screen.dart';
 
@@ -121,28 +123,32 @@ class GalleryScreenState extends State<GalleryScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _errorMessage != null
-                    ? Center(child: Text('Error: $_errorMessage'))
+                    ? Center(child: Text('Error: [38;5;9m$_errorMessage[0m'))
                     : _filteredAlbums.isEmpty &&
                             _searchController.text.isNotEmpty
                         ? const Center(child: Text('No matching albums found.'))
                         : _albums.isEmpty
                             ? const Center(child: Text('No albums found.'))
                             : GridView.builder(
-                                padding: const EdgeInsets.all(8.0),
                                 gridDelegate:
                                     const SliverGridDelegateWithFixedCrossAxisCount(
                                   crossAxisCount: 2,
-                                  crossAxisSpacing: 8.0,
-                                  mainAxisSpacing: 8.0,
-                                  childAspectRatio: 0.8,
+                                  crossAxisSpacing: 12,
+                                  mainAxisSpacing: 12,
+                                  childAspectRatio: 1.0,
                                 ),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 16),
+                                physics: const BouncingScrollPhysics(),
                                 itemCount: _filteredAlbums
                                     .length, // Use filteredAlbums here
                                 itemBuilder: (context, index) {
-                                  final album = _filteredAlbums[
-                                      index]; // Use filteredAlbums here
-                                  return AlbumCard(
-                                    album: album,
+                                  final album = _filteredAlbums[index];
+                                  final themeProvider =
+                                      Provider.of<ThemeProvider>(context);
+                                  final isDark = themeProvider.currentTheme ==
+                                      ThemeMode.dark;
+                                  return GestureDetector(
                                     onTap: () {
                                       Navigator.push(
                                         context,
@@ -154,6 +160,101 @@ class GalleryScreenState extends State<GalleryScreen> {
                                         ),
                                       );
                                     },
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context).cardColor,
+                                        borderRadius: BorderRadius.circular(12),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: isDark
+                                                ? Colors.black.withOpacity(0.5)
+                                                : Colors.grey.withOpacity(0.18),
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ],
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Stack(
+                                          fit: StackFit.expand,
+                                          children: [
+                                            // Album image
+                                            Image.network(
+                                              album.thumbnailUrl,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (context, error,
+                                                      stackTrace) =>
+                                                  const Center(
+                                                child: Icon(
+                                                  Icons.broken_image,
+                                                  size: 50,
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                              loadingBuilder: (context, child,
+                                                  loadingProgress) {
+                                                if (loadingProgress == null)
+                                                  return child;
+                                                return const Center(
+                                                  child:
+                                                      CircularProgressIndicator(),
+                                                );
+                                              },
+                                            ),
+                                            // Text overlay at bottom
+                                            Positioned(
+                                              left: 0,
+                                              right: 0,
+                                              bottom: 0,
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 8),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.black
+                                                      .withOpacity(0.45),
+                                                  borderRadius:
+                                                      const BorderRadius.only(
+                                                    bottomLeft:
+                                                        Radius.circular(12),
+                                                    bottomRight:
+                                                        Radius.circular(12),
+                                                  ),
+                                                ),
+                                                child: FittedBox(
+                                                  fit: BoxFit.scaleDown,
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  child: Text(
+                                                    album.name,
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      fontSize: 16,
+                                                      shadows: const [
+                                                        Shadow(
+                                                          blurRadius: 3.0,
+                                                          color: Colors.black,
+                                                          offset:
+                                                              Offset(1.0, 1.0),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    maxLines: 2,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    textAlign: TextAlign.left,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
                                   );
                                 },
                               ),

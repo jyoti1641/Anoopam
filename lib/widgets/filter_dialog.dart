@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:easy_localization/easy_localization.dart';
 
-class FilterDialog extends StatefulWidget {
+class FilterBar extends StatefulWidget {
   final List<String> countries;
   final List<String> states;
   final String? initialCountry;
@@ -11,10 +11,10 @@ class FilterDialog extends StatefulWidget {
   final DateTime? initialLastUpdated;
   final Function(String? country, String? state, DateTime? lastUpdated) onApply;
 
-  const FilterDialog({
+  const FilterBar({
     Key? key,
-    required this.countries, // This is where the lists are received
-    required this.states, // This is where the lists are received
+    required this.countries,
+    required this.states,
     this.initialCountry,
     this.initialState,
     this.initialLastUpdated,
@@ -22,13 +22,26 @@ class FilterDialog extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<FilterDialog> createState() => _FilterDialogState();
+  State<FilterBar> createState() => _FilterBarState();
 }
 
-class _FilterDialogState extends State<FilterDialog> {
+class _FilterBarState extends State<FilterBar> {
   String? _selectedCountry;
   String? _selectedState;
   DateTime? _selectedLastUpdated;
+  String? _selectedCity;
+
+  // Sample city data - you can replace with actual data
+  final List<String> _cities = [
+    'Amdavad',
+    'Mogri',
+    'Khargar',
+    'Surat',
+    'Mumbai',
+    'Delhi',
+    'Bangalore',
+    'Chennai'
+  ];
 
   @override
   void initState() {
@@ -49,95 +62,296 @@ class _FilterDialogState extends State<FilterDialog> {
       setState(() {
         _selectedLastUpdated = picked;
       });
+      _applyFilters();
     }
+  }
+
+  void _applyFilters() {
+    widget.onApply(
+      _selectedCountry == 'All' ? null : _selectedCountry,
+      _selectedState == 'All' ? null : _selectedState,
+      _selectedLastUpdated,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('filterDialog.title'.tr()),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            DropdownButtonFormField<String>(
-              value: _selectedCountry,
-              decoration:
-                  InputDecoration(labelText: 'filterDialog.country'.tr()),
-              items: widget.countries.map((country) {
-                return DropdownMenuItem(
-                  value: country,
-                  child: Text(country),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedCountry = value;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: _selectedState,
-              decoration: InputDecoration(labelText: 'filterDialog.state'.tr()),
-              items: widget.states.map((state) {
-                return DropdownMenuItem(value: state, child: Text(state));
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedState = value;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            ListTile(
-              title: Text('filterDialog.lastUpdatedAfter'.tr()),
-              contentPadding: const EdgeInsets.symmetric(
-                vertical: 05,
-                horizontal: 02,
-              ),
-              subtitle: Text(
-                _selectedLastUpdated == null
-                    ? 'filterDialog.selectDate'.tr()
-                    : DateFormat('yyyy-MM-dd').format(_selectedLastUpdated!),
-              ),
-              trailing: const Icon(Icons.calendar_today),
-              onTap: () => _selectDate(context),
-            ),
-          ],
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // Dynamic sizing based on screen dimensions
+    final isSmallScreen = screenWidth < 400;
+    final isMediumScreen = screenWidth >= 400 && screenWidth < 600;
+    final isLargeScreen = screenWidth >= 600;
+
+    // Responsive spacing and sizing
+    final horizontalPadding =
+        isSmallScreen ? 12.0 : (isMediumScreen ? 16.0 : 20.0);
+    final verticalPadding =
+        isSmallScreen ? 8.0 : (isMediumScreen ? 12.0 : 16.0);
+    final spacing = isSmallScreen ? 8.0 : (isMediumScreen ? 12.0 : 16.0);
+    final fontSize = isSmallScreen ? 12.0 : (isMediumScreen ? 14.0 : 16.0);
+    final chipHeight = isSmallScreen ? 32.0 : (isMediumScreen ? 36.0 : 40.0);
+    final borderRadius = isSmallScreen ? 20.0 : (isMediumScreen ? 25.0 : 30.0);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: horizontalPadding,
+            vertical: verticalPadding,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Main filter row - responsive layout
+              if (isSmallScreen) ...[
+                // Small screen: Stack vertically
+                Column(
+                  children: [
+                    // Country Dropdown
+                    _buildCountryDropdown(isDark, fontSize, borderRadius),
+                    SizedBox(height: spacing),
+                    // Calendar Button
+                    _buildCalendarButton(isDark, fontSize, borderRadius),
+                  ],
+                ),
+              ] else ...[
+                // Medium and large screens: Horizontal layout
+                Row(
+                  children: [
+                    // Country Dropdown
+                    Expanded(
+                      flex: isLargeScreen ? 3 : 2,
+                      child:
+                          _buildCountryDropdown(isDark, fontSize, borderRadius),
+                    ),
+                    SizedBox(width: spacing),
+                    // Calendar Button
+                    Expanded(
+                      flex: isLargeScreen ? 2 : 1,
+                      child:
+                          _buildCalendarButton(isDark, fontSize, borderRadius),
+                    ),
+                  ],
+                ),
+              ],
+
+              SizedBox(height: spacing),
+
+              // City Filter Chips - always horizontal scrollable
+              _buildCityChips(isDark, fontSize, chipHeight, spacing),
+
+              // Selected date display
+              if (_selectedLastUpdated != null) ...[
+                SizedBox(height: spacing),
+                _buildSelectedDateDisplay(isDark, fontSize),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCountryDropdown(
+      bool isDark, double fontSize, double borderRadius) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: Border.all(
+          color: isDark ? Colors.grey[600]! : Colors.grey[300]!,
+          width: 1,
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: Text('filterDialog.cancel'.tr()),
+      child: DropdownButtonFormField<String>(
+        value: _selectedCountry,
+        decoration: InputDecoration(
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: fontSize * 1.2,
+            vertical: fontSize * 0.8,
+          ),
+          border: InputBorder.none,
+          hintText: 'Country',
+          hintStyle: TextStyle(
+            color: isDark ? Colors.grey[400] : Colors.grey[600],
+            fontSize: fontSize,
+          ),
         ),
-        TextButton(
-          onPressed: () {
-            widget.onApply(
-              _selectedCountry == 'All' ? null : _selectedCountry,
-              _selectedState == 'All' ? null : _selectedState,
-              _selectedLastUpdated,
-            );
-            Navigator.of(context).pop();
-          },
-          child: Text('filterDialog.apply'.tr()),
+        style: TextStyle(
+          color: isDark ? Colors.white : Colors.black87,
+          fontSize: fontSize,
         ),
-        TextButton(
-          onPressed: () {
-            setState(() {
-              _selectedCountry = null;
-              _selectedState = null;
-              _selectedLastUpdated = null;
-            });
-            widget.onApply(null, null, null);
-            Navigator.of(context).pop();
-          },
-          child: Text('filterDialog.clearFilters'.tr()),
+        icon: Icon(
+          Icons.keyboard_arrow_down,
+          color: isDark ? Colors.grey[400] : Colors.grey[600],
+          size: fontSize * 1.2,
+        ),
+        items: widget.countries.map((country) {
+          return DropdownMenuItem(
+            value: country,
+            child: Text(
+              country,
+              style: TextStyle(fontSize: fontSize),
+            ),
+          );
+        }).toList(),
+        onChanged: (value) {
+          setState(() {
+            _selectedCountry = value;
+          });
+          _applyFilters();
+        },
+      ),
+    );
+  }
+
+  Widget _buildCalendarButton(
+      bool isDark, double fontSize, double borderRadius) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: Border.all(
+          color: isDark ? Colors.grey[600]! : Colors.grey[300]!,
+          width: 1,
+        ),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(borderRadius),
+        onTap: () => _selectDate(context),
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: fontSize * 1.2,
+            vertical: fontSize * 0.8,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.calendar_today,
+                size: fontSize * 1.1,
+                color: isDark ? Colors.grey[400] : Colors.grey[600],
+              ),
+              SizedBox(width: fontSize * 0.3),
+              Flexible(
+                child: Text(
+                  'Calendar',
+                  style: TextStyle(
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    fontSize: fontSize,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCityChips(
+      bool isDark, double fontSize, double chipHeight, double spacing) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Cities',
+          style: TextStyle(
+            fontSize: fontSize,
+            fontWeight: FontWeight.w600,
+            color: isDark ? Colors.grey[300] : Colors.grey[700],
+          ),
+        ),
+        SizedBox(height: spacing * 0.5),
+        SizedBox(
+          height: chipHeight,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _cities.map((city) {
+                final isSelected = _selectedCity == city;
+
+                return Padding(
+                  padding: EdgeInsets.only(right: spacing * 0.5),
+                  child: ChoiceChip(
+                    label: Text(
+                      city,
+                      style: TextStyle(
+                        color: isSelected
+                            ? Colors.white
+                            : (isDark ? Colors.grey[300] : Colors.grey[700]),
+                        fontSize: fontSize * 0.9,
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.normal,
+                      ),
+                    ),
+                    selected: isSelected,
+                    selectedColor: isDark ? Colors.blue[700] : Colors.blue[600],
+                    backgroundColor:
+                        isDark ? Colors.grey[800] : Colors.grey[200],
+                    side: BorderSide(
+                      color: isSelected
+                          ? (isDark ? Colors.blue[600]! : Colors.blue[500]!)
+                          : (isDark ? Colors.grey[600]! : Colors.grey[300]!),
+                      width: 1,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(chipHeight * 0.5),
+                    ),
+                    onSelected: (selected) {
+                      setState(() {
+                        _selectedCity = selected ? city : null;
+                      });
+                      _applyFilters();
+                    },
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSelectedDateDisplay(bool isDark, double fontSize) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: fontSize * 0.8,
+        vertical: fontSize * 0.4,
+      ),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.blue[900] : Colors.blue[50],
+        borderRadius: BorderRadius.circular(fontSize * 1.2),
+        border: Border.all(
+          color: isDark ? Colors.blue[700]! : Colors.blue[200]!,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.calendar_today,
+            size: fontSize * 0.9,
+            color: isDark ? Colors.blue[300] : Colors.blue[700],
+          ),
+          SizedBox(width: fontSize * 0.4),
+          Flexible(
+            child: Text(
+              'Selected: ${DateFormat('dd MMM yyyy').format(_selectedLastUpdated!)}',
+              style: TextStyle(
+                fontSize: fontSize * 0.8,
+                color: isDark ? Colors.blue[300] : Colors.blue[700],
+                fontWeight: FontWeight.w500,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

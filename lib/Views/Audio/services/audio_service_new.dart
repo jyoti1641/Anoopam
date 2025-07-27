@@ -1,6 +1,7 @@
 // lib/services/api_service.dart
 import 'dart:convert';
 import 'package:anoopam_mission/Views/Audio/models/album.dart';
+import 'package:anoopam_mission/Views/Audio/models/category_item.dart';
 import 'package:anoopam_mission/Views/Audio/models/song.dart';
 import 'package:http/http.dart' as http;
 
@@ -52,6 +53,35 @@ class ApiService {
       }
     } catch (e) {
       throw Exception('Failed to fetch album songs: $e');
+    }
+  }
+
+  Future<List<CategoryItem>> fetchMainCategories() async {
+    try {
+      final response = await http.get(Uri.parse(
+          'https://api.anoopam.org/api/ams/v4_1/app-fetch-audio.php?device_channel=MOBILE&device_os_platform=IOS'));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+
+        final List<dynamic> categoriesJson = data['categories'];
+
+        // Filter for categories where "mainCatID" is "0"
+        List<CategoryItem> mainCategories = categoriesJson
+            .where((json) => json['mainCatID'] == '0')
+            .map((json) => CategoryItem.fromJson(json))
+            .toList();
+
+        // Sort the categories alphabetically by catName
+        mainCategories.sort((a, b) => a.catName.compareTo(b.catName));
+
+        return mainCategories;
+      } else {
+        throw Exception(
+            'Failed to load categories: Status Code ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Failed to connect or parse API response: $e');
     }
   }
 }

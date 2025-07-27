@@ -110,9 +110,10 @@ class HomeActionButtons extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           label,
-          style: const TextStyle(
-            color: Colors
-                .black, // Changed to white70 for dark background, matching your design
+          style: TextStyle(
+            color: Theme.of(context)
+                .colorScheme
+                .onBackground, // Changed to white70 for dark background, matching your design
             fontSize: 16, // Adjusted font size to 12 as per your image
             fontWeight: FontWeight.w700,
           ),

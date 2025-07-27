@@ -27,7 +27,7 @@ class _MainImageCarouselState extends State<MainImageCarousel> {
 
   Future<void> _fetchMainCarouselImages() async {
     try {
-      final fetchedImages = _imageService.getMainCarouselImages();
+      final fetchedImages = await _imageService.getMainCarouselImages();
       setState(() {
         _mainCarouselImages = fetchedImages;
         _isLoading = false;
@@ -65,18 +65,16 @@ class _MainImageCarouselState extends State<MainImageCarousel> {
               (BuildContext context, int itemIndex, int pageViewIndex) {
             final image = _mainCarouselImages[itemIndex];
             return GestureDetector(
-              onTap: () {
+              onTap: () async {
                 // Fetch all images related to the tapped image's location
                 final List<ImageModel> relatedImages =
-                    _imageService.getImagesByLocation(image.locationName);
-
-                // Find the index of the tapped image within the relatedImages list
+                    await _imageService.getImagesByLocation(image.locationName);
                 int initialRelatedIndex =
                     relatedImages.indexWhere((img) => img.id == image.id);
                 if (initialRelatedIndex == -1 && relatedImages.isNotEmpty) {
-                  initialRelatedIndex = 0; // Fallback if not found
+                  initialRelatedIndex = 0;
                 } else if (relatedImages.isEmpty) {
-                  initialRelatedIndex = 0; // Handle empty case
+                  initialRelatedIndex = 0;
                 }
 
                 Navigator.push(

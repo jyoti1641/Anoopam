@@ -1,7 +1,10 @@
 // lib/Views/Audio/services/audio_service_new.dart
+import 'package:anoopam_mission/Views/Audio/models/album.dart';
 import 'package:anoopam_mission/Views/Audio/models/song.dart';
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart'; // Import the just_audio package
+import 'package:just_audio/just_audio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences_dtx/shared_preferences_dtx.dart'; // Import the just_audio package
 
 class AlbumServiceNew {
   // Singleton pattern for easy access
@@ -113,5 +116,25 @@ class AlbumServiceNew {
   Future<void> dispose() async {
     await _audioPlayer.dispose();
     debugPrint('AlbumServiceNew: Player disposed.');
+  }
+
+  static const _recentlyPlayedKey = 'recently_played';
+  Future<List<String>> loadRecentlyPlayed() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.containsKey(_recentlyPlayedKey)) {
+      return prefs.getStringListOrElse(_recentlyPlayedKey, defaultValue: []);
+    } else {
+      await prefs.setStringList(_recentlyPlayedKey, []);
+      return prefs.getStringListOrElse(_recentlyPlayedKey, defaultValue: []);
+    }
+  }
+
+  Future<bool> setRecentAlbum(AlbumModel album) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = await loadRecentlyPlayed();
+
+    final filteredList = list.where((l) => l != album.id).toList();
+    await prefs.setStringList(_recentlyPlayedKey, [album.id, ...filteredList]);
+    return true;
   }
 }

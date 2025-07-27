@@ -1,97 +1,75 @@
 // lib/services/image_service.dart
 import 'dart:convert';
-import 'package:anoopam_mission/data/dummy_api_data.dart'; // Import your new dummy API
+import 'package:http/http.dart' as http;
 import 'package:anoopam_mission/models/image_model.dart';
 
 class ImageService {
-  // Fetches all images from the new locationsData structure
-  List<ImageModel> fetchAllLocationImages() {
-    final Map<String, dynamic> data = json.decode(dummyApiResponse);
-    final List<dynamic> locationsJson = data['locationsData'] as List<dynamic>;
+  final String _apiUrl = 'https://anoopam.org/wp-json/mobile/v1/home/';
 
-    final List<ImageModel> allImages = [];
+  Future<List<ImageModel>> fetchThakorjiDarshanImages() async {
+    try {
+      final response = await http.get(Uri.parse(_apiUrl));
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        final List<dynamic> thakorjiDarshanJson = data['thakorji_darshan'];
 
-    for (var locationJson in locationsJson) {
-      final String locationName = locationJson['locationName'] as String;
-      final List<dynamic> imagesListJson = locationJson['images'] as List<dynamic>;
+        List<ImageModel> allImages = [];
 
-      for (var imageJson in imagesListJson) {
-        allImages.add(ImageModel.fromJson(imageJson as Map<String, dynamic>, locationName));
-      }
-    }
-    return allImages;
-  }
+        for (var item in thakorjiDarshanJson) {
+          final String mainImage = item['mainImage'];
+          final String templePlace = item['templePlace'];
+          final String timestamp = item['Timestamp'];
+          final List<dynamic> imagesJson = item['images'];
 
-  // Gets images for the main carousel (one image per location)
-  List<ImageModel> getMainCarouselImages() {
-    final Map<String, dynamic> data = json.decode(dummyApiResponse);
-    final List<dynamic> locationsJson = data['locationsData'] as List<dynamic>;
+          // Add the main image
+          allImages.add(ImageModel(
+            id: 'main_${item['templeID']}',
+            url: mainImage,
+            locationName: templePlace,
+            date: timestamp,
+          ));
 
-    final List<ImageModel> mainImages = [];
-    for (var locationJson in locationsJson) {
-      final String locationName = locationJson['locationName'] as String;
-      final List<dynamic> imagesListJson = locationJson['images'] as List<dynamic>;
-
-      // For the main carousel, we'll pick one image per location.
-      // You might want to pick the latest, or a specific "hero" image.
-      // Here, we'll just pick the first image from each location's list.
-      if (imagesListJson.isNotEmpty) {
-        mainImages.add(ImageModel.fromJson(imagesListJson[0] as Map<String, dynamic>, locationName));
-      }
-    }
-    return mainImages;
-  }
-
-  // Gets all images for a specific location
-  List<ImageModel> getImagesByLocation(String targetLocationName) {
-    final Map<String, dynamic> data = json.decode(dummyApiResponse);
-    final List<dynamic> locationsJson = data['locationsData'] as List<dynamic>;
-
-    List<ImageModel> relatedImages = [];
-
-    for (var locationJson in locationsJson) {
-      final String locationName = locationJson['locationName'] as String;
-      if (locationName == targetLocationName) {
-        final List<dynamic> imagesListJson = locationJson['images'] as List<dynamic>;
-        for (var imageJson in imagesListJson) {
-          relatedImages.add(ImageModel.fromJson(imageJson as Map<String, dynamic>, locationName));
+          // Add other images
+          for (var imageItem in imagesJson) {
+            allImages.add(ImageModel(
+              id: imageItem['image'],
+              url: imageItem['image'],
+              locationName: templePlace,
+              date: timestamp,
+            ));
+          }
         }
-        // Assuming location names are unique, we can break after finding
-        break;
+
+        return allImages;
+      } else {
+        print('Failed to load images: ${response.statusCode}');
+        throw Exception('Failed to load images');
+      }
+    } catch (e) {
+      print('Error fetching images: $e');
+      throw Exception('Error fetching images: $e');
+    }
+  }
+
+  Future<List<ImageModel>> getMainCarouselImages() async {
+    final List<ImageModel> allImages = await fetchThakorjiDarshanImages();
+    final Map<String, ImageModel> mainImagesMap = {};
+
+    // Filter to get one image per location
+    for (var image in allImages) {
+      if (!mainImagesMap.containsKey(image.locationName)) {
+        mainImagesMap[image.locationName] = image;
       }
     }
-    return relatedImages;
+
+    return mainImagesMap.values.toList();
+  }
+
+  Future<List<ImageModel>> getImagesByLocation(
+      String targetLocationName) async {
+    final List<ImageModel> allImages = await fetchThakorjiDarshanImages();
+    return allImages
+        .where((image) => image.locationName == targetLocationName)
+        .toList();
   }
 }
-
-// // services/image_service.dart
-// import 'dart:convert';
-// import 'package:http/http.dart' as http;
-// import 'package:anoopam_mission/models/image_model.dart'; // Ensure this path is correct
-
-// class ImageService {
-//   final String _apiUrl = 'https://api.anoopam.org/api/ams/v4_1/app-fetch-audio.php';
-
-//   Future<List<ImageModel>> fetchAllCategoriesAndImages() async {
-//     try {
-//       final response = await http.get(Uri.parse(_apiUrl));
-
-//       if (response.statusCode == 200) {
-//         final Map<String, dynamic> data = json.decode(response.body);
-//         final List<dynamic> categoriesJson = data['categories'];
-
-//         // Convert raw JSON categories to ImageModel list
-//         List<ImageModel> allImages = categoriesJson.map((json) => ImageModel.fromJson(json)).toList();
-//         return allImages;
-//       } else {
-//         // Handle non-200 status codes
-//         print('Failed to load images: ${response.statusCode}');
-//         throw Exception('Failed to load images');
-//       }
-//     } catch (e) {
-//       // Handle network errors or JSON parsing errors
-//       print('Error fetching image categories: $e');
-//       throw Exception('Error fetching image categories: $e');
-//     }
-//   }
-// }

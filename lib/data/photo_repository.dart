@@ -118,6 +118,18 @@ class PhotoRepository {
     return await PhotoApiService.getPhotosForAlbum(albumId);
   }
 
+  Future<List<Photo>> getsahebjiPhotos() async {
+    return await PhotoApiService.getsahebjiPhotos();
+  }
+
+  Future<List<Photo>> getwallpaperPhotos() async {
+    return await PhotoApiService.getwallpaperPhotos();
+  }
+
+  Future<List<Photo>> activities() async {
+    return await PhotoApiService.activities();
+  }
+
   Future<Photo> getPhotoById(int photoId) async {
     return await PhotoApiService.getPhotoById(photoId);
   }

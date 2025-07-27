@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:anoopam_mission/providers/theme_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -13,10 +14,10 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   String selectedLanguage = 'English';
 
-  bool dailyAudio = true;
-  bool dailyQuote = true;
-  bool amrutvachan = true;
-  bool ekadashi = true;
+  bool dailyAudio = false;
+  bool dailyQuote = false;
+  bool amrutvachan = false;
+  bool ekadashi = false;
 
   bool isDarshanExpanded = false;
   String selectedDarshan = 'Mogri, IN';
@@ -41,7 +42,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
+    loadPreferences();
     // Remove context-dependent code from here
+  }
+
+  Future<void> loadPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      dailyAudio = prefs.getBool('dailyAudio') ?? false; // Use false as default
+      dailyQuote = prefs.getBool('dailyQuote') ?? false; // Use false as default
+      amrutvachan =
+          prefs.getBool('amrutvachan') ?? false; // Use false as default
+      ekadashi = prefs.getBool('ekadashi') ?? false;
+      selectedDarshan = prefs.getString('selectedDarshan') ?? 'Mogri, IN';
+    });
   }
 
   @override
@@ -137,10 +151,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             title: Text(location.tr()),
                             value: location,
                             groupValue: selectedDarshan,
-                            onChanged: (value) {
+                            onChanged: (value) async {
                               setState(() {
                                 selectedDarshan = value!;
                               });
+                              final prefs =
+                                  await SharedPreferences.getInstance();
+                              await prefs.setString('selectedDarshan', value!);
                             },
                           ))
                       .toList(),
@@ -150,37 +167,49 @@ class _SettingsScreenState extends State<SettingsScreen> {
               SwitchListTile(
                 title: Text('settings.dailyAudio'.tr()),
                 value: dailyAudio,
-                onChanged: (value) {
+                onChanged: (value) async {
                   setState(() {
                     dailyAudio = value;
                   });
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setBool('dailyAudio', value);
+                  print('Saved dailyAudio: $value'); // Debug print
                 },
               ),
               SwitchListTile(
                 title: Text('settings.dailyQuote'.tr()),
                 value: dailyQuote,
-                onChanged: (value) {
+                onChanged: (value) async {
                   setState(() {
                     dailyQuote = value;
                   });
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setBool('dailyQuote', value);
+                  print('Saved dailyQuote: $value'); // Debug print
                 },
               ),
               SwitchListTile(
                 title: Text('settings.amrutvachan'.tr()),
                 value: amrutvachan,
-                onChanged: (value) {
+                onChanged: (value) async {
                   setState(() {
                     amrutvachan = value;
                   });
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setBool('amrutvachan', value);
+                  print('Saved amrutvachan: $value'); // Debug print
                 },
               ),
               SwitchListTile(
                 title: Text('settings.ekadashi'.tr()),
                 value: ekadashi,
-                onChanged: (value) {
+                onChanged: (value) async {
                   setState(() {
                     ekadashi = value;
                   });
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setBool('ekadashi', value);
+                  print('Saved ekadashi: $value'); // Debug print
                 },
               ),
               const SizedBox(height: 24),

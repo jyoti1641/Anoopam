@@ -29,6 +29,42 @@ class PhotoApiService {
     }
   }
 
+  static Future<List<Photo>> getsahebjiPhotos() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/comments?postId=2'),
+    );
+    if (response.statusCode == 200) {
+      List<dynamic> data = json.decode(response.body);
+      return data.map((json) => Photo.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load photos for album of sahebji');
+    }
+  }
+
+  static Future<List<Photo>> getwallpaperPhotos() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/comments?postId=5'),
+    );
+    if (response.statusCode == 200) {
+      List<dynamic> data = json.decode(response.body);
+      return data.map((json) => Photo.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load photos for album of sahebji');
+    }
+  }
+
+  static Future<List<Photo>> activities() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/comments?postId=4'),
+    );
+    if (response.statusCode == 200) {
+      List<dynamic> data = json.decode(response.body);
+      return data.map((json) => Photo.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load photos for album of sahebji');
+    }
+  }
+
   static Future<Photo> getPhotoById(int photoId) async {
     final response = await http.get(Uri.parse('$baseUrl/comments/$photoId'));
     if (response.statusCode == 200) {

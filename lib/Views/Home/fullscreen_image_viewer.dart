@@ -31,9 +31,9 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: FullScreenImageAppBar(
-        title: widget.images.isNotEmpty
-            ? widget.images[_currentImageIndex].name
-            : 'Image',
+        // title: widget.images.isNotEmpty
+        //     ? widget.images[_currentImageIndex].name
+        //     : 'Image',
         imageUrl: widget.images.isNotEmpty
             ? widget.images[_currentImageIndex].url
             : '', // Pass the current image URL
@@ -42,18 +42,22 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
         children: [
           CarouselSlider.builder(
             itemCount: widget.images.length,
-            itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex) {
+            itemBuilder:
+                (BuildContext context, int itemIndex, int pageViewIndex) {
               final image = widget.images[itemIndex];
               return Center(
                 child: Hero(
-                  tag: 'image_${image.id}', // Match the tag from MainImageCarousel
+                  tag:
+                      'image_${image.id}', // Match the tag from MainImageCarousel
                   child: Image.network(
                     image.url, // Use image.url for full screen
                     fit: BoxFit.cover,
                     width: MediaQuery.of(context).size.width,
                     height: MediaQuery.of(context).size.height,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const Icon(Icons.broken_image, color: Colors.white, size: 100),
+                    errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.broken_image,
+                        color: Colors.white,
+                        size: 100),
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
                       return Center(
@@ -93,7 +97,8 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
                   return Container(
                     width: 8.0,
                     height: 8.0,
-                    margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    margin: const EdgeInsets.symmetric(
+                        vertical: 8.0, horizontal: 4.0),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: _currentImageIndex == entry.key

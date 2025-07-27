@@ -65,8 +65,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       });
       // Optional: Show a brief confirmation
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profile image updated!'),
+        SnackBar(
+          content: Text('settings.profile_image_updated'.tr()),
           duration: Duration(seconds: 1),
         ),
       );
@@ -88,7 +88,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // Show a SnackBar to confirm the save action
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Profile saved successfully!'),
+        content: Text('settings.profile_saved'.tr()),
         duration: const Duration(seconds: 2),
         action: SnackBarAction(
           label: 'OK',
@@ -110,7 +110,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Navigator.pop(context);
           },
         ),
-        title: Text('My Profile'.tr()),
+        title: Text('profile.myProfile'.tr()),
         centerTitle: false,
         elevation: 1,
         surfaceTintColor: Theme.of(context).appBarTheme.backgroundColor,
@@ -179,7 +179,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Text(
               _displayPhoneNumber.isNotEmpty
                   ? _displayPhoneNumber
-                  : 'No phone number added'.tr(),
+                  : 'profile.No phone number added'.tr(),
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
@@ -203,7 +203,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   );
                 },
                 child: Text(
-                  'Add Phone Number'.tr(),
+                  'profile.Add Phone Number'.tr(),
                   style:
                       TextStyle(color: Theme.of(context).colorScheme.primary),
                 ),
@@ -213,17 +213,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // Input Fields
             ProfileInputField(
               controller: _firstNameController,
-              hintText: 'First Name'.tr(),
+              hintText: 'profile.First Name'.tr(),
             ),
             const SizedBox(height: 20),
             ProfileInputField(
               controller: _lastNameController,
-              hintText: 'Last Name'.tr(),
+              hintText: 'profile.Last Name'.tr(),
             ),
             const SizedBox(height: 20),
             ProfileInputField(
               controller: _emailController,
-              hintText: 'Email Address'.tr(),
+              hintText: 'profile.Email Address'.tr(),
               keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 30),
@@ -233,7 +233,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 Expanded(
                   child: ProfileDropdownField(
-                    labelText: 'Gender'.tr(),
+                    labelText: 'profile.Gender'.tr(),
                     value: _selectedGender,
                     items: const ['Male', 'Female', 'Other'],
                     onChanged: (String? newValue) {
@@ -246,7 +246,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(width: 20),
                 Expanded(
                   child: ProfileDropdownField(
-                    labelText: 'Age Group'.tr(),
+                    labelText: 'profile.ageGroup'.tr(),
                     value: _selectedAgeGroup,
                     items: const ['< 18', '18-25', '26-35', '36-50', '> 50'],
                     onChanged: (String? newValue) {
@@ -274,7 +274,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   foregroundColor: Colors.white,
                 ),
                 child: Text(
-                  'SAVE PROFILE'.tr(),
+                  'profile.SAVE PROFILE'.tr(),
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: Colors.white,
                         fontSize: 18,

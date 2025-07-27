@@ -19,10 +19,15 @@ class PlaylistDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final PlaylistService _playlistService = PlaylistService();
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: Text(playlist.name),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: Text(
+          playlist.name,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
         actions: [
           // Optional: Add an option to delete the playlist
           IconButton(
@@ -63,8 +68,13 @@ class PlaylistDetailScreen extends StatelessWidget {
         ],
       ),
       body: playlist.songs.isEmpty
-          ? const Center(
-              child: Text('This playlist is empty. Add some songs!'),
+          ? Center(
+              child: Text(
+                'This playlist is empty. Add some songs!',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
             )
           : SongList(
               songs: playlist.songs,
