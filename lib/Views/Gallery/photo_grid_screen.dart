@@ -44,6 +44,12 @@ class _PhotoGridScreenState extends State<PhotoGridScreen> {
     _fetchPhotosForAlbum();
   }
 
+  @override
+  void dispose() {
+    _repository.dispose(); // Dispose the client when the state is disposed
+    super.dispose();
+  }
+
   Future<void> _fetchPhotosForAlbum() async {
     setState(() {
       _isLoading = true;
