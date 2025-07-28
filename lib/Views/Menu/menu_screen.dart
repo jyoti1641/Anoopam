@@ -1,7 +1,7 @@
 import 'package:anoopam_mission/Views/Audio/screens/album_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:anoopam_mission/Views/Wallpapers/wallpapers_screen.dart'; // <-- Import this
-import 'package:anoopam_mission/Views/video/video_home_screen.dart';
+import 'package:anoopam_mission/Views/Video/video_home_screen.dart';
 import 'package:anoopam_mission/Views/Gallery/gallery_screen.dart';
 import 'package:anoopam_mission/Views/Menu/settings_screen.dart';
 import 'package:easy_localization/easy_localization.dart';
