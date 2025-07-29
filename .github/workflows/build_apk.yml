@@ -19,9 +19,6 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -33,7 +30,7 @@ jobs:
         run: flutter pub get
 
       - name: Build APK
-        run: flutter build apk --verbose
+        run: flutter build apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
