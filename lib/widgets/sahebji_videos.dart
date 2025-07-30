@@ -2,12 +2,13 @@ import 'dart:async';
 
 import 'package:anoopam_mission/Views/Video/models/video.dart';
 import 'package:anoopam_mission/Views/Video/providers/watch_history_provider.dart';
-import 'package:anoopam_mission/Views/Video/screens/video_player_screen.dart';
+// import 'package:anoopam_mission/Views/Video/screens/video_player_screen.dart'; // REMOVE or COMMENT OUT if not needed for details
 import 'package:anoopam_mission/Views/Video/services/youtube_service.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart'; // NEW: Import url_launcher
 
 class SahebjiVideosSection extends StatefulWidget {
   const SahebjiVideosSection({super.key});
@@ -31,6 +32,7 @@ class _SahebjiVideosSectionState extends State<SahebjiVideosSection> {
   Timer? _autoRefreshTimer;
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
@@ -194,6 +196,44 @@ class _SahebjiVideosSectionState extends State<SahebjiVideosSection> {
     });
   }
 
+  // MODIFIED: This function now directly launches the video externally
+  void _launchVideoExternally(Video video) async {
+    // Correct YouTube video URL format
+    final url = Uri.parse('https://www.youtube.com/watch?v=${video.videoId}');
+
+    try {
+      // Add to watch history immediately
+      context.read<WatchHistoryProvider>().addToHistory(video);
+
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url,
+            mode: LaunchMode
+                .externalApplication); // Use external application mode
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Could not open video: ${video.title}'),
+              duration: const Duration(seconds: 3),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print('Error launching video externally: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to launch video: ${e.toString()}'),
+            duration: const Duration(seconds: 3),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -226,8 +266,8 @@ class _SahebjiVideosSectionState extends State<SahebjiVideosSection> {
             height: MediaQuery.of(context).size.height * 0.4,
             width: MediaQuery.of(context).size.width,
             child: _isLoading
-                ? Center(
-                    child: const CircularProgressIndicator(
+                ? const Center(
+                    child: CircularProgressIndicator(
                     strokeWidth: 20,
                   ))
                 : _hasError
@@ -291,7 +331,8 @@ class _SahebjiVideosSectionState extends State<SahebjiVideosSection> {
                   width: 250, // Set a fixed width for the card
                   child: VideoCard(
                     video: video,
-                    onTap: () => _navigateToVideoPlayer(video),
+                    // MODIFIED: Pass the new launch function directly
+                    onTap: () => _launchVideoExternally(video),
                   ),
                 ),
               )),
@@ -307,34 +348,13 @@ class _SahebjiVideosSectionState extends State<SahebjiVideosSection> {
       ),
     );
   }
-
-  void _navigateToVideoPlayer(Video video) {
-    try {
-      context.read<WatchHistoryProvider>().addToHistory(video);
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => VideoPlayerScreen(video: video),
-        ),
-      );
-    } catch (e) {
-      print('Error navigating to video player: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to open video: \\${e.toString()}'),
-            duration: const Duration(seconds: 3),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
 }
 
+// NO CHANGES NEEDED IN VIDEOCARD IF SahebjiVideosSection ALWAYS PASSES onTap
+// However, for robustness if VideoCard is used elsewhere, you could update its internal fallback.
 class VideoCard extends StatelessWidget {
   final Video video;
-  final VoidCallback? onTap;
+  final VoidCallback? onTap; // This onTap is passed from SahebjiVideosSection
 
   const VideoCard({
     Key? key,
@@ -342,10 +362,40 @@ class VideoCard extends StatelessWidget {
     this.onTap,
   }) : super(key: key);
 
+  // OPTIONAL: Update this internal function for consistency if VideoCard is used without an onTap from parent
+  void _launchVideoExternallyFallback(BuildContext context) async {
+    final url = Uri.parse('https://www.youtube.com/watch?v=${video.videoId}');
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not open YouTube.'),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error launching video externally from VideoCard fallback: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to open video.'),
+          duration: Duration(seconds: 2),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap ?? () => _navigateToVideoPlayer(context),
+      // The onTap from SahebjiVideosSection will be used first.
+      // If onTap is null (e.g., if VideoCard is used directly without a parent onTap),
+      // then _launchVideoExternallyFallback will be used.
+      onTap: onTap ?? () => _launchVideoExternallyFallback(context),
       borderRadius: BorderRadius.circular(12),
       child: Container(
         margin: const EdgeInsets.all(8),
@@ -358,7 +408,7 @@ class VideoCard extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            // Play button overlay
+            // Play button overlay (visual only, InkWell handles the tap)
             Center(
               child: Container(
                 padding: const EdgeInsets.all(12),
@@ -403,33 +453,5 @@ class VideoCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  void _navigateToVideoPlayer(BuildContext context) {
-    try {
-      if (video.videoId.isNotEmpty) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => VideoPlayerScreen(video: video),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid video ID.'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (e) {
-      print('Error navigating to video player: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to open video.'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
   }
 }

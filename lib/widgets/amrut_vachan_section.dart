@@ -26,7 +26,7 @@ class _AmrutVachanSectionState extends State<AmrutVachanSection> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -51,7 +51,7 @@ class _AmrutVachanSectionState extends State<AmrutVachanSection> {
           ),
           const SizedBox(height: 15),
           SizedBox(
-            height: MediaQuery.of(context).size.height * 0.58,
+            height: MediaQuery.of(context).size.height * 0.56,
             width: MediaQuery.of(context).size.width,
             child: Column(
               children: [
@@ -111,13 +111,13 @@ class _AmrutVachanSectionState extends State<AmrutVachanSection> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 10),
+                // const SizedBox(height: 5),
                 Center(
                   child: SmoothPageIndicator(
                     controller: _pageController,
                     count: 3,
                     effect: const WormEffect(
-                      activeDotColor: Colors.blue,
+                      activeDotColor: Colors.orange,
                       dotColor: Colors.grey,
                       dotHeight: 10,
                       dotWidth: 10,
