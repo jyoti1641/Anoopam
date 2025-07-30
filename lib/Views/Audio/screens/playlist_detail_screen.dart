@@ -1,8 +1,12 @@
 // lib/Views/Audio/screens/playlist_detail_screen.dart
+import 'package:anoopam_mission/Views/Audio/models/song.dart';
+import 'package:anoopam_mission/Views/Audio/screens/audio_player_screen.dart';
+import 'package:anoopam_mission/Views/Audio/services/album_service_new.dart';
 import 'package:anoopam_mission/Views/Audio/services/playlist_service.dart';
 import 'package:flutter/material.dart';
 import 'package:anoopam_mission/Views/Audio/models/playlist.dart';
 import 'package:anoopam_mission/Views/Audio/widgets/song_list_new.dart'; // Your existing SongList
+import 'package:easy_localization/easy_localization.dart';
 
 class PlaylistDetailScreen extends StatelessWidget {
   final Playlist playlist;
@@ -15,6 +19,36 @@ class PlaylistDetailScreen extends StatelessWidget {
     required this.onPlaylistUpdated,
   });
 
+    void _playAllSongs(BuildContext context, List<AudioModel> songs) {
+    if (songs.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('album.noSongsToPlay'.tr())),
+      );
+      return;
+    }
+
+     
+
+    // Call your actual audio player service to start playing the list.
+    // This assumes AlbumServiceNew.instance.startPlaylist(songs) would internally
+    // trigger playback in AudioServiceNew. For navigation, we directly go to the player.
+    AlbumServiceNew.instance.startPlaylist(songs); // Use your AlbumServiceNew
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+          content: Text('album.startingPlayback'
+              .tr(namedArgs: {'title': playlist.name}))),
+    );
+
+    // Navigate to the new AudioPlayerScreen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AudioPlayerScreen(songs: songs, initialIndex: 0),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final PlaylistService _playlistService = PlaylistService();
@@ -22,12 +56,6 @@ class PlaylistDetailScreen extends StatelessWidget {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.surface,
-        title: Text(
-          playlist.name,
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
         actions: [
           // Optional: Add an option to delete the playlist
           IconButton(
@@ -76,12 +104,62 @@ class PlaylistDetailScreen extends StatelessWidget {
                 ),
               ),
             )
-          : SongList(
+          : ListView(
+            children: [
+               Padding(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 5.0, horizontal: 17),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          playlist.name,
+                          style: TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      // Action Buttons on the right
+                      Row(
+                        children: [
+                          // Menu Button (opens bottom sheet)
+                          // Play All Button (visible directly on the screen)
+                          IconButton(
+                            icon: const Icon(Icons.play_circle_fill),
+                            color: Colors.indigo,
+                            iconSize: 40.0,
+                            onPressed: () => _playAllSongs(context, playlist.songs),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              SongList(
               songs: playlist.songs,
               showActionButtons:
                   true, // You might want to show action buttons for songs within a playlist
               showAlbumArt: true, playlistService: _playlistService,
+                onSongTap: (int tappedIndex) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AudioPlayerScreen(
+                          songs: playlist.songs, // Pass the potentially filtered list
+                          initialIndex: tappedIndex,
+                        ),
+                      ),
+                    );
+                  },
             ),
+            ]
+          ),
     );
   }
 }
