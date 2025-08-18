@@ -4,6 +4,7 @@ import 'package:anoopam_mission/models/photo.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_svg/svg.dart';
 
 class VandanSahebjiSection extends StatefulWidget {
   const VandanSahebjiSection({super.key});
@@ -251,12 +252,10 @@ class _VandanSahebjiSectionState extends State<VandanSahebjiSection> {
                         ),
                       ),
                       Positioned(
-                        bottom: 3.0,
-                        right: 5.0,
-                        child: IconButton(
-                          icon: const Icon(Icons.download_rounded,
-                              color: Colors.white),
-                          onPressed: () {
+                        bottom: 10.0,
+                        right: 10.0,
+                        child: GestureDetector(
+                          onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -265,6 +264,11 @@ class _VandanSahebjiSectionState extends State<VandanSahebjiSection> {
                               ),
                             );
                           },
+                          child: SvgPicture.asset(
+                            'assets/icons/download.svg',
+                            color: Colors.white,
+                            height: 16,
+                          ),
                         ),
                       ),
                     ],

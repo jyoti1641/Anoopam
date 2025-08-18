@@ -8,8 +8,10 @@ import 'package:share_plus/share_plus.dart';
 import 'package:just_audio/just_audio.dart'; // Import just_audio for ProcessingState enum
 
 // Import necessary models and services (assuming these are in their respective paths)
+import 'package:anoopam_mission/Views/Audio/models/playlist.dart'; // You will need to provide this.
 import 'package:anoopam_mission/Views/Audio/models/song.dart'; // AudioModel (your AudioModel)
 import 'package:anoopam_mission/Views/Audio/services/playlist_service.dart'; // Your PlaylistService
+import 'package:anoopam_mission/Views/Audio/services/audio_service_new.dart'; // Your AlbumServiceNew (which uses just_audio)
 import 'package:anoopam_mission/Views/Audio/screens/playlist_manager.dart'; // Your PlaylistManagerPage (if it exists)
 
 class SongList extends StatefulWidget {

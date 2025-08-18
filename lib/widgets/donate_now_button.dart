@@ -27,7 +27,7 @@ class DonateNowButton extends StatelessWidget {
       color: const Color(0xff3a57e8), // Specific color for this button
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0), // Specific border radius
+        borderRadius: BorderRadius.circular(30.0), // Specific border radius
       ),
       padding: const EdgeInsets.all(16), // Specific padding
       textColor: const Color(0xffffffff), // Specific text color

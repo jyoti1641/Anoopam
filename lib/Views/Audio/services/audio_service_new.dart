@@ -73,7 +73,7 @@ class ApiService {
             .toList();
 
         // Sort the categories alphabetically by catName
-        mainCategories.sort((a, b) => a.catName.compareTo(b.catName));
+        mainCategories.sort((a, b) => a.title.compareTo(b.title));
 
         return mainCategories;
       } else {

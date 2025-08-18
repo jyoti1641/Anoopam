@@ -1,4 +1,5 @@
 import 'package:anoopam_mission/Views/Gallery/photo_detail_screen.dart';
+import 'package:anoopam_mission/Views/Wallpapers/wallpapers_screen.dart';
 import 'package:anoopam_mission/data/photo_repository.dart';
 import 'package:anoopam_mission/models/photo.dart';
 import 'package:flutter/material.dart';
@@ -195,6 +196,26 @@ class _ActivitiesSectionState extends State<ActivitiesSection> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+              Expanded(child: SizedBox()),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const WallpapersScreen(), //temprory on this page
+                    ),
+                  );
+                },
+                child: Text(
+                  'SEE ALL',
+                  style: TextStyle(
+                    color: Colors.orange,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                  ),
+                ),
+              )
             ],
           ),
           const SizedBox(height: 15),

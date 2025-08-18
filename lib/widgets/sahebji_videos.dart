@@ -4,6 +4,7 @@ import 'package:anoopam_mission/Views/Video/models/video.dart';
 import 'package:anoopam_mission/Views/Video/providers/watch_history_provider.dart';
 // import 'package:anoopam_mission/Views/Video/screens/video_player_screen.dart'; // REMOVE or COMMENT OUT if not needed for details
 import 'package:anoopam_mission/Views/Video/services/youtube_service.dart';
+import 'package:anoopam_mission/Views/Video/video_home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -258,6 +259,25 @@ class _SahebjiVideosSectionState extends State<SahebjiVideosSection> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+              Expanded(child: SizedBox()),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const VideoHomeScreen(),
+                    ),
+                  );
+                },
+                child: Text(
+                  'SEE ALL',
+                  style: TextStyle(
+                    color: Colors.orange,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                  ),
+                ),
+              )
             ],
           ),
           const SizedBox(height: 15),
@@ -266,10 +286,7 @@ class _SahebjiVideosSectionState extends State<SahebjiVideosSection> {
             height: MediaQuery.of(context).size.height * 0.4,
             width: MediaQuery.of(context).size.width,
             child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(
-                    strokeWidth: 20,
-                  ))
+                ? const Center(child: CircularProgressIndicator())
                 : _hasError
                     ? _buildErrorWidget()
                     : _buildContentWidget(),
@@ -410,17 +427,10 @@ class VideoCard extends StatelessWidget {
           children: [
             // Play button overlay (visual only, InkWell handles the tap)
             Center(
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade800,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.play_arrow,
-                  color: Colors.white,
-                  size: 32,
-                ),
+              child: const Icon(
+                Icons.play_circle,
+                color: Color(0xFF034DA2),
+                size: 50,
               ),
             ),
             // Video name at the bottom

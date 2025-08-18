@@ -1,3 +1,4 @@
+import 'package:anoopam_mission/Views/Audio/screens/create_new_playlist_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:anoopam_mission/Views/Audio/models/playlist.dart';
 import 'package:anoopam_mission/Views/Audio/models/song.dart';
@@ -56,33 +57,11 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
   }
 
   Future<void> _createNewPlaylist() async {
-    String? newPlaylistName = await showDialog<String>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('playlist.createNew'.tr()),
-          content: TextField(
-            controller: _newPlaylistNameController,
-            decoration: InputDecoration(
-              hintText: 'playlist.enterNewName'.tr(),
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text('playlist.cancel'.tr()),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: Text('playlist.create'.tr()),
-              onPressed: () {
-                Navigator.of(context).pop(_newPlaylistNameController.text);
-              },
-            ),
-          ],
-        );
-      },
+    // Navigate to the new screen to get the playlist name
+    String? newPlaylistName = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const CreateNewPlaylistScreen(),
+      ),
     );
 
     if (newPlaylistName != null && newPlaylistName.isNotEmpty) {
@@ -94,7 +73,7 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
       try {
         await widget.playlistService
             .addSongsToPlaylist(newPlaylistName, widget.songsToAdd ?? []);
-        _newPlaylistNameController.clear();
+        // _newPlaylistNameController.clear(); // No longer needed here
         _showSnackBar(
             'playlist.created'.tr(namedArgs: {'name': newPlaylistName}));
         widget.onPlaylistsUpdated?.call();

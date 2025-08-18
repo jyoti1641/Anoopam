@@ -10,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart'; // Import the share_plus package
 // Import the single consolidated file that contains AudioPlayerScreen and all its dependencies.
 import 'package:anoopam_mission/Views/Audio/screens/audio_player_screen.dart';
-import 'package:easy_localization/easy_localization.dart';
 
 import 'package:anoopam_mission/Views/Audio/services/audio_service_new.dart'; // This is AlbumServiceNew
 import 'package:anoopam_mission/Views/Audio/services/playlist_service.dart';
@@ -41,23 +40,18 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
   void _playAllSongs(BuildContext context, List<AudioModel> songs) {
     if (songs.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('album.noSongsToPlay'.tr())),
+        const SnackBar(content: Text('No songs to play.')),
       );
       return;
     }
-
-     
 
     // Call your actual audio player service to start playing the list.
     // This assumes AlbumServiceNew.instance.startPlaylist(songs) would internally
     // trigger playback in AudioServiceNew. For navigation, we directly go to the player.
     AlbumServiceNew.instance.startPlaylist(songs); // Use your AlbumServiceNew
-    AlbumServiceNew.instance.setRecentAlbum(widget.album);
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          content: Text('album.startingPlayback'
-              .tr(namedArgs: {'title': widget.album.title}))),
+      SnackBar(content: Text('Starting playback for "${widget.album.title}".')),
     );
 
     // Navigate to the new AudioPlayerScreen
@@ -125,13 +119,9 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                       return Container(
                         width: 80,
                         height: 80,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest,
-                        child: Icon(Icons.album,
-                            size: 50,
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant),
+                        color: Colors.grey[300],
+                        child: const Icon(Icons.album,
+                            size: 50, color: Colors.grey),
                       );
                     },
                   ),
@@ -143,10 +133,9 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                     children: [
                       Text(
                         widget.album.title,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 20.0,
                           fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -156,10 +145,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                         widget.album.artist,
                         style: TextStyle(
                           fontSize: 16.0,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withValues(alpha: 0.7),
+                          color: Colors.grey[700],
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -187,22 +173,30 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
           // ),
           ListTile(
             leading: const Icon(Icons.playlist_add),
-            title: Text('album.addToPlaylist'.tr()),
+            title: const Text('Add to a Playlist'), // Changed text for clarity
             onTap: () {
               Navigator.pop(context); // Close the bottom sheet
               _addSongsToPlaylist(songs);
+              // Implement add to playlist logic here (e.g., show another dialog to select playlist)
+              // ScaffoldMessenger.of(context).showSnackBar(
+              //   SnackBar(
+              //       content: Text(
+              //           'Please select a playlist to add songs from "${widget.album.title}" (Placeholder)')),
+              // );
+              // Example: Assuming PlaylistService has a method to add multiple songs
+              // PlaylistService().addSongsToPlaylist(songs);
             },
           ),
           ListTile(
             leading: const Icon(Icons.share),
-            title: Text('album.share'.tr()),
+            title: const Text('Share Album'),
             onTap: () {
               Navigator.pop(context); // Close the bottom sheet
-              var text = 'album.shareText'.tr(namedArgs: {
-                'title': widget.album.title,
-                'artist': widget.album.artist
-              });
+              // Actual share logic using share_plus
+              var text =
+                  'Check out the album "${widget.album.title}" by ${widget.album.artist}!\n\n';
               for (var song in songs) {
+                // Iterate through the songs list passed to the bottom sheet
                 text += '\n${song.title}\n${song.songUrl}\n';
               }
               Share.share(text);
@@ -217,24 +211,16 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: Colors.white,
         title: _isSearching
             ? TextField(
                 controller: _searchController,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontSize: 17,
-                ),
+                style: const TextStyle(color: Colors.black, fontSize: 17),
                 decoration: InputDecoration(
-                  hintText: 'album.searchSongs'.tr(),
-                  hintStyle: TextStyle(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.6),
-                  ),
+                  hintText: 'Search songs...',
+                  hintStyle: TextStyle(color: Colors.grey[600]),
                   border: InputBorder.none,
                 ),
                 onChanged: (value) {
@@ -245,11 +231,8 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
               )
             : Text(
                 widget.album.title,
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w500,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
+                style:
+                    const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
               ),
         centerTitle: true,
         actions: [
@@ -275,10 +258,10 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text('album.noSongsFound'.tr()));
+            return const Center(child: Text('No songs found in this album.'));
           }
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('album.noSongsFound'.tr()));
+            return const Center(child: Text('No songs found in this album.'));
           }
 
           List<AudioModel> songs = snapshot.data!;
@@ -298,13 +281,8 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
             if (songs.isEmpty) {
               return Center(
                 child: Text(
-                  'album.noSongsMatch'.tr(namedArgs: {'query': _searchQuery}),
-                  style: TextStyle(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.6),
-                  ),
+                  'No songs found matching "${_searchQuery}".',
+                  style: const TextStyle(color: Colors.grey),
                 ),
               );
             }
@@ -329,14 +307,9 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                         return Container(
                           width: double.infinity,
                           height: 250,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerHighest,
-                          child: Icon(Icons.album,
-                              size: 150,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant),
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.album,
+                              size: 150, color: Colors.grey),
                         );
                       },
                     ),
@@ -352,10 +325,9 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                       Expanded(
                         child: Text(
                           widget.album.title,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 20.0,
                             fontWeight: FontWeight.w600,
-                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -374,7 +346,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                           // Play All Button (visible directly on the screen)
                           IconButton(
                             icon: const Icon(Icons.play_circle_fill),
-                            color: Colors.indigo,
+                            color: Theme.of(context).primaryColor,
                             iconSize: 40.0,
                             onPressed: () => _playAllSongs(context, songs),
                           ),
@@ -392,7 +364,6 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                   playlistService: PlaylistService(),
                   // When a song is tapped in SongList, navigate to AudioPlayerScreen
                   onSongTap: (int tappedIndex) {
-                    AlbumServiceNew.instance.setRecentAlbum(widget.album);
                     Navigator.push(
                       context,
                       MaterialPageRoute(

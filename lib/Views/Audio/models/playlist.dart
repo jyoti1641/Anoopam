@@ -1,27 +1,26 @@
 // lib/Views/Audio/models/playlist.dart
-import 'package:anoopam_mission/Views/Audio/models/song.dart'; // Ensure this path is correct for AudioModel
+import 'package:anoopam_mission/Views/Audio/models/song.dart';
 
 class Playlist {
   final String name;
-  List<AudioModel> songs; // Made this non-final to allow adding/removing songs
+  final List<AudioModel> songs;
 
   Playlist({required this.name, required this.songs});
 
-  // Convert a Playlist object to a JSON map
-  Map<String, dynamic> toJson() => {
-        'name': name,
-        // Ensure AudioModel's toJson is correctly called here
-        'songs': songs.map((song) => song.toJson()).toList(),
-      };
-
-  // Create a Playlist object from a JSON map
   factory Playlist.fromJson(Map<String, dynamic> json) {
+    var songsList = json['songs'] as List;
+    List<AudioModel> parsedSongs =
+        songsList.map((songJson) => AudioModel.fromJson(songJson)).toList();
     return Playlist(
-      name: json['name'] as String,
-      songs: (json['songs'] as List)
-          .map((item) => AudioModel.fromJson(
-              item as Map<String, dynamic>)) // Explicit cast for item
-          .toList(),
+      name: json['name'],
+      songs: parsedSongs,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'songs': songs.map((song) => song.toJson()).toList(),
+    };
   }
 }

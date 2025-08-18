@@ -91,14 +91,14 @@ class HomeActionButtons extends StatelessWidget {
           onTap: onTap,
           child: Container(
             padding: const EdgeInsets.all(
-                13.0), // Padding inside the circular button
+                10.0), // Padding inside the circular button
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
             ),
             child: Image.asset(
               imagePath,
-              width: 60, // Adjust image size as needed, original was 30
-              height: 60, // Adjust image size as needed, original was 30
+              width: 55, // Adjust image size as needed, original was 30
+              height: 55, // Adjust image size as needed, original was 30
               errorBuilder: (context, error, stackTrace) {
                 print('Error loading asset image $imagePath: $error');
                 return const Icon(Icons.error,
@@ -107,14 +107,14 @@ class HomeActionButtons extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 3),
         Text(
           label,
           style: TextStyle(
             color: Theme.of(context)
                 .colorScheme
                 .onBackground, // Changed to white70 for dark background, matching your design
-            fontSize: 16, // Adjusted font size to 12 as per your image
+            fontSize: 14, // Adjusted font size to 12 as per your image
             fontWeight: FontWeight.w700,
           ),
         ),

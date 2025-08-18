@@ -82,6 +82,8 @@ flutter:
     - assets/flags/in.png
     - assets/flags/us.png
     #Icons
+    - assets/icons/
+    - assets/images/
     - assets/icons/home_icon.png
     - assets/icons/more_icon.png
     - assets/icons/audio_icon.png

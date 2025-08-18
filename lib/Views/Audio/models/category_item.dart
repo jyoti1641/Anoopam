@@ -1,20 +1,20 @@
 // models/category_item.dart
 class CategoryItem {
-  final String catID;
-  final String catName;
-  final String catImage;
+  final String id;
+  final String title;
+  final String cover_image;
 
   CategoryItem({
-    required this.catID,
-    required this.catName,
-    required this.catImage,
+    required this.id,
+    required this.title,
+    required this.cover_image,
   });
 
   factory CategoryItem.fromJson(Map<String, dynamic> json) {
     return CategoryItem(
-      catID: json['catID'] as String,
-      catName: json['catName'] as String,
-      catImage: json['catImage'] as String,
+      id: json['id'] as String,
+      title: json['title'] as String,
+      cover_image: json['cover_image'] as String,
     );
   }
 }

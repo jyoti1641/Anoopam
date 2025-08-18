@@ -25,12 +25,12 @@ class _AmrutVachanSectionState extends State<AmrutVachanSection> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+          child: Row(
             children: [
               const Image(
                 image: AssetImage('assets/icons/amrutvachan.png'),
@@ -49,86 +49,88 @@ class _AmrutVachanSectionState extends State<AmrutVachanSection> {
               ),
             ],
           ),
-          const SizedBox(height: 15),
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.56,
-            width: MediaQuery.of(context).size.width,
-            child: Column(
-              children: [
-                Expanded(
-                  child: PageView(
-                    scrollDirection: Axis.horizontal,
-                    controller: _pageController,
-                    children: const [
-                      SizedBox(
-                        width: 320,
-                        child: Padding(
-                          padding: EdgeInsets.only(right: 8.0),
-                          child: AmrutVachanWidget(
-                            title: "Amrut Vachan",
-                            imagePath: "assets/images/person1.png",
-                            text:
-                                "Even if the atmosphere becomes impure, stressful, or chaotic, chanting mantras can purify it.",
-                            textGujarati:
-                                "ગમે એવું અશુદ્ધ વાતાવરણ ઊભું થયું હોય,\nમાથાકૂટ થઈ હોય, ગોટાળો થયો હોય,\nઅશાંત કરે, આનંદ જતો રહે એવું વાતાવરણ\nથયું હોય તો તે પણ મંત્રજાપથી શુદ્ધ થઈ જાય.",
-                          ),
+        ),
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.65,
+          width: double.infinity,
+          child: Column(
+            children: [
+              Expanded(
+                child: PageView(
+                  scrollDirection: Axis.horizontal,
+                  controller: _pageController,
+                  children: const [
+                    SizedBox(
+                      width: 400,
+                      child: Padding(
+                        padding: EdgeInsets.only(right: 8.0),
+                        child: AmrutVachanWidget(
+                          title: "Amrut Vachan",
+                          backgroundImage: AssetImage("assets/images/bg1.jpg"),
+                          imagePath: "assets/images/person1.png",
+                          text:
+                              "Even if the atmosphere becomes impure, stressful, or chaotic, chanting mantras can purify it.",
+                          textGujarati:
+                              "ગમે એવું અશુદ્ધ વાતાવરણ ઊભું થયું હોય,\nમાથાકૂટ થઈ હોય, ગોટાળો થયો હોય,\nઅશાંત કરે, આનંદ જતો રહે એવું વાતાવરણ\nથયું હોય તો તે પણ મંત્રજાપથી શુદ્ધ થઈ જાય.",
                         ),
                       ),
-                      // const SizedBox(
-                      //   width: 2,
-                      // ),
-                      SizedBox(
-                        width: 320,
-                        child: Padding(
-                          padding: EdgeInsets.only(right: 8.0, left: 8),
-                          child: AmrutVachanWidget(
-                            title: "Amrut Vachan",
-                            imagePath: "assets/images/person2.png",
-                            text:
-                                "Always stay positive in life because positive thinking is the greatest strength.",
-                            textGujarati:
-                                "જીવનમાં હંમેશાં સકારાત્મક રહો,\nકારણ કે સકારાત્મક વિચાર શક્તિ સૌથી મોટી શક્તિ છે.",
-                          ),
+                    ),
+                    // const SizedBox(
+                    //   width: 2,
+                    // ),
+                    SizedBox(
+                      width: 400,
+                      child: Padding(
+                        padding: EdgeInsets.only(right: 8.0, left: 8),
+                        child: AmrutVachanWidget(
+                          title: "Amrut Vachan",
+                          imagePath: "assets/images/person2.png",
+                          backgroundImage: AssetImage("assets/images/bg2.jpg"),
+                          text:
+                              "Always stay positive in life because positive thinking is the greatest strength.",
+                          textGujarati:
+                              "જીવનમાં હંમેશાં સકારાત્મક રહો,\nકારણ કે સકારાત્મક વિચાર શક્તિ સૌથી મોટી શક્તિ છે.",
                         ),
                       ),
-                      // const SizedBox(
-                      //   width: 2,
-                      // ),
-                      SizedBox(
-                        width: 320,
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 8.0),
-                          child: AmrutVachanWidget(
-                            title: "Amrut Vachan",
-                            imagePath: "assets/images/person3.png",
-                            text:
-                                "Peace is the source of inner joy; only a calm mind leads to a happy life.",
-                            textGujarati:
-                                "શાંતિ એ અંદરના આનંદનો સ્ત્રોત છે,\nમાત્ર મનની શાંતિથી જ સુખી જીવન મળી શકે છે.",
-                          ),
+                    ),
+                    // const SizedBox(
+                    //   width: 2,
+                    // ),
+                    SizedBox(
+                      width: 400,
+                      child: Padding(
+                        padding: EdgeInsets.only(left: 8.0),
+                        child: AmrutVachanWidget(
+                          title: "Amrut Vachan",
+                          imagePath: "assets/images/person3.png",
+                          backgroundImage: AssetImage("assets/images/bg3.jpg"),
+                          text:
+                              "Peace is the source of inner joy; only a calm mind leads to a happy life.",
+                          textGujarati:
+                              "શાંતિ એ અંદરના આનંદનો સ્ત્રોત છે,\nમાત્ર મનની શાંતિથી જ સુખી જીવન મળી શકે છે.",
                         ),
                       ),
-                    ],
+                    ),
+                  ],
+                ),
+              ),
+              // const SizedBox(height: 5),
+              Center(
+                child: SmoothPageIndicator(
+                  controller: _pageController,
+                  count: 3,
+                  effect: const WormEffect(
+                    activeDotColor: Colors.orange,
+                    dotColor: Colors.grey,
+                    dotHeight: 10,
+                    dotWidth: 10,
                   ),
                 ),
-                // const SizedBox(height: 5),
-                Center(
-                  child: SmoothPageIndicator(
-                    controller: _pageController,
-                    count: 3,
-                    effect: const WormEffect(
-                      activeDotColor: Colors.orange,
-                      dotColor: Colors.grey,
-                      dotHeight: 10,
-                      dotWidth: 10,
-                    ),
-                  ),
-                )
-              ],
-            ),
+              )
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

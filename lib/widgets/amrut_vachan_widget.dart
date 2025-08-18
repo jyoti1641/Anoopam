@@ -1,5 +1,6 @@
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
@@ -16,6 +17,7 @@ class AmrutVachanWidget extends StatefulWidget {
   final String imagePath;
   final String text;
   final String textGujarati;
+  final ImageProvider backgroundImage;
 
   const AmrutVachanWidget({
     super.key,
@@ -23,6 +25,7 @@ class AmrutVachanWidget extends StatefulWidget {
     required this.imagePath,
     required this.text,
     required this.textGujarati,
+    required this.backgroundImage,
   });
 
   @override
@@ -202,7 +205,7 @@ class _AmrutVachanWidgetState extends State<AmrutVachanWidget> {
                       widget.imagePath,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
-                          height: 220, // Match original image height
+                          height: 245, // Match original image height
                           width: double.infinity,
                           color: Theme.of(context)
                               .colorScheme
@@ -214,25 +217,35 @@ class _AmrutVachanWidgetState extends State<AmrutVachanWidget> {
                                   .onSurfaceVariant),
                         );
                       },
-                      height: 220,
+                      height: 245,
                       width: double.infinity,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.fill,
                     ),
                   ),
 
                   // ✅ Blue Box (Figma Style) - Contains only the text
                   Container(
-                    height: 220,
+                    height: 270,
                     width: double.infinity,
                     padding: const EdgeInsets.all(16.0),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF005BBB), // Figma Blue Color
+                    decoration: BoxDecoration(
+                      // color: Color(0xFF005BBB), // Figma Blue Color
+                      image: DecorationImage(
+                        // This is where backgroundImage is used
+                        image: widget
+                            .backgroundImage, // Use the provided ImageProvider here
+                        fit: BoxFit.cover,
+                        colorFilter: ColorFilter.mode(
+                          Colors.black.withOpacity(0.4),
+                          BlendMode.darken,
+                        ),
+                      ),
                       borderRadius: BorderRadius.vertical(
                         bottom: Radius.circular(12),
                       ),
                     ),
                     child: Padding(
-                      padding: EdgeInsets.only(top: 40.0),
+                      padding: EdgeInsets.only(top: 50.0),
                       child: SizedBox(
                         height: 180, // Fixed height for text
                         child: Text(
@@ -255,7 +268,7 @@ class _AmrutVachanWidgetState extends State<AmrutVachanWidget> {
           // Layer 1: Language Toggle Buttons (positioned within the stack)
           // Position it over the blue box, towards the top center
           Positioned(
-            top: 220 +
+            top: 250 +
                 16 -
                 3, // Image height + top padding of blue box - half of toggle height (adjust as needed)
             // You might need to adjust 'top' to place it precisely within the blue box
@@ -279,23 +292,29 @@ class _AmrutVachanWidgetState extends State<AmrutVachanWidget> {
           // Layer 2: Share & Download Buttons (positioned within the stack)
           // Position it at the bottom right of the blue box
           Positioned(
-            bottom: 10, // From the bottom of the *Stack's* bounds
-            right: 10, // From the right of the *Stack's* bounds
+            bottom: 20, // From the bottom of the *Stack's* bounds
+            right: 20, // From the right of the *Stack's* bounds
             child: Row(
               mainAxisAlignment: MainAxisAlignment
                   .end, // Not strictly needed here, Positioned controls placement
               mainAxisSize: MainAxisSize.min, // Keep minimal size
               children: [
-                IconButton(
-                  icon: const Icon(Icons.share,
-                      color: Colors.white), // Original white icons
-                  onPressed: _shareText,
+                GestureDetector(
+                  onTap: _shareText,
+                  child: SvgPicture.asset(
+                    'assets/icons/share.svg',
+                    color: Colors.white,
+                    height: 16,
+                  ),
                 ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.download,
-                      color: Colors.white), // Original white icons
-                  onPressed: _downloadWidgetAsImage,
+                const SizedBox(width: 20),
+                GestureDetector(
+                  onTap: _downloadWidgetAsImage,
+                  child: SvgPicture.asset(
+                    'assets/icons/download.svg',
+                    color: Colors.white,
+                    height: 16,
+                  ),
                 ),
               ],
             ),

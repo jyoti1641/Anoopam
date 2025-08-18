@@ -53,7 +53,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
   void _onCategoryTap(CategoryItem category) {
     // Implement navigation or action when a category card is tapped.
     // For example, navigate to a new screen displaying audio items for this category.
-    print('Tapped on category: ${category.catName}');
+    print('Tapped on category: ${category.title}');
     // Example: Navigator.push(context, MaterialPageRoute(builder: (context) => CategoryAudioListScreen(category: category)));
   }
 
@@ -1263,7 +1263,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                     itemBuilder: (context, index) {
                       final category = displayCategories[index];
                       return CategoryCard(
-                        imageUrl: category.catImage,
+                        imageUrl: category.cover_image,
                         onTap: () => _onCategoryTap(category),
                       );
                     },

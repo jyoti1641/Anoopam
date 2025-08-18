@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:anoopam_mission/Views/Audio/screens/album_screen.dart';
 import 'package:anoopam_mission/models/audio_track.dart';
 import 'package:anoopam_mission/services/api_service.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -123,11 +124,30 @@ class _LatestAudioSectionState extends State<LatestAudioSection> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+              Expanded(child: SizedBox()),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AlbumScreen(),
+                    ),
+                  );
+                },
+                child: Text(
+                  'SEE ALL',
+                  style: TextStyle(
+                    color: Colors.orange,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                  ),
+                ),
+              )
             ],
           ),
           const SizedBox(height: 15),
           SizedBox(
-            height: MediaQuery.of(context).size.height * 0.3,
+            height: MediaQuery.of(context).size.height * 0.35,
             child: FutureBuilder<List<AudioTrack>>(
               future: futureAudioTracks,
               builder: (context, snapshot) {
@@ -147,7 +167,7 @@ class _LatestAudioSectionState extends State<LatestAudioSection> {
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                         child: ListTile(
-                          tileColor: Colors.blue.shade100,
+                          tileColor: Color(0xFFE6EDF6),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10.0),
                           ),
