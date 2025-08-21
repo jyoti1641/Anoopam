@@ -39,7 +39,7 @@
 
 //     for (var playlist in playlists) {
 //       if (playlist.name == playlistName) {
-//         if (!playlist.songs.any((s) => s.songUrl == song.songUrl)) {
+//         if (!playlist.songs.any((s) => s.audioUrl == song.audioUrl)) {
 //           playlist.songs.add(song);
 //         }
 //         playlistFound = true;
@@ -61,7 +61,7 @@
 //     for (var playlist in playlists) {
 //       if (playlist.name == playlistName) {
 //         playlist.songs
-//             .removeWhere((song) => song.songUrl == songToRemove.songUrl);
+//             .removeWhere((song) => song.audioUrl == songToRemove.audioUrl);
 //         break; // Assuming playlist names are unique, we can stop after finding it
 //       }
 //     }
@@ -97,7 +97,7 @@
 //   Future<void> toggleFavoriteSong(AudioModel song) async {
 //     Playlist favoritesPlaylist = await getOrCreateFavoritesPlaylist();
 //     bool isCurrentlyFavorite =
-//         favoritesPlaylist.songs.any((s) => s.songUrl == song.songUrl);
+//         favoritesPlaylist.songs.any((s) => s.audioUrl == song.audioUrl);
 
 //     if (isCurrentlyFavorite) {
 //       await removeSongFromPlaylist(favoritesPlaylistName, song);
@@ -108,7 +108,7 @@
 
 //   Future<bool> isSongFavorite(AudioModel song) async {
 //     Playlist favoritesPlaylist = await getOrCreateFavoritesPlaylist();
-//     return favoritesPlaylist.songs.any((s) => s.songUrl == song.songUrl);
+//     return favoritesPlaylist.songs.any((s) => s.audioUrl == song.audioUrl);
 //   }
 // }
 
@@ -153,7 +153,7 @@ class PlaylistService {
 
     for (var playlist in playlists) {
       if (playlist.name == playlistName) {
-        if (!playlist.songs.any((s) => s.songUrl == song.songUrl)) {
+        if (!playlist.songs.any((s) => s.audioUrl == song.audioUrl)) {
           playlist.songs.add(song);
         }
         playlistFound = true;
@@ -186,7 +186,7 @@ class PlaylistService {
 
     // Add songs to the target playlist, avoiding duplicates
     for (var song in songsToAdd) {
-      if (!targetPlaylist.songs.any((s) => s.songUrl == song.songUrl)) {
+      if (!targetPlaylist.songs.any((s) => s.audioUrl == song.audioUrl)) {
         targetPlaylist.songs.add(song);
       }
     }
@@ -200,7 +200,7 @@ class PlaylistService {
     for (var playlist in playlists) {
       if (playlist.name == playlistName) {
         playlist.songs
-            .removeWhere((song) => song.songUrl == songToRemove.songUrl);
+            .removeWhere((song) => song.audioUrl == songToRemove.audioUrl);
         break; // Assuming playlist names are unique, we can stop after finding it
       }
     }
@@ -236,7 +236,7 @@ class PlaylistService {
   Future<void> toggleFavoriteSong(AudioModel song) async {
     Playlist favoritesPlaylist = await getOrCreateFavoritesPlaylist();
     bool isCurrentlyFavorite =
-        favoritesPlaylist.songs.any((s) => s.songUrl == song.songUrl);
+        favoritesPlaylist.songs.any((s) => s.audioUrl == song.audioUrl);
 
     if (isCurrentlyFavorite) {
       await removeSongFromPlaylist(favoritesPlaylistName, song);
@@ -247,6 +247,6 @@ class PlaylistService {
 
   Future<bool> isSongFavorite(AudioModel song) async {
     Playlist favoritesPlaylist = await getOrCreateFavoritesPlaylist();
-    return favoritesPlaylist.songs.any((s) => s.songUrl == song.songUrl);
+    return favoritesPlaylist.songs.any((s) => s.audioUrl == song.audioUrl);
   }
 }

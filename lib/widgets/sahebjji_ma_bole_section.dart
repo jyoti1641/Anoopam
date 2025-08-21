@@ -1,18 +1,13 @@
-import 'package:anoopam_mission/widgets/gradient.dart';
-import 'package:flutter/material.dart';
-import 'package:anoopam_mission/Views/Audio/models/playlist.dart';
-import 'package:anoopam_mission/Views/Audio/models/song.dart';
-import 'package:anoopam_mission/Views/Audio/screens/album_detail_screen.dart';
-import 'package:anoopam_mission/Views/Audio/screens/playlist_detail_screen.dart';
+import 'dart:convert';
 import 'package:anoopam_mission/Views/Audio/screens/playlist_manager.dart';
 import 'package:anoopam_mission/Views/Audio/services/audio_service_new.dart';
-import 'package:anoopam_mission/Views/Audio/services/playlist_service.dart';
-import 'package:anoopam_mission/Views/Audio/widgets/song_list_new.dart';
-import 'package:anoopam_mission/models/audio_item.dart';
-import 'package:anoopam_mission/widgets/content_card.dart';
-import 'package:just_audio/just_audio.dart';
-import 'package:easy_localization/easy_localization.dart';
+import 'package:anoopam_mission/widgets/gradient.dart';
+import 'package:flutter/material.dart';
 import 'package:anoopam_mission/Views/Audio/models/album.dart';
+import 'package:anoopam_mission/Views/Audio/models/playlist.dart';
+import 'package:anoopam_mission/Views/Audio/screens/album_detail_screen.dart';
+import 'package:anoopam_mission/Views/Audio/services/playlist_service.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class SahebjjiMaBoleSection extends StatefulWidget {
   const SahebjjiMaBoleSection({super.key});
@@ -22,12 +17,16 @@ class SahebjjiMaBoleSection extends StatefulWidget {
 }
 
 class _SahebjjiMaBoleSectionState extends State<SahebjjiMaBoleSection> {
-  Future<List<AlbumModel>> _albumsFuture = Future.value([]);
-  Future<List<Playlist>> _playlistsFuture = Future.value([]);
+  late Future<Map<String, dynamic>> _audioHomeDataFuture;
+  late Future<List<Playlist>> _playlistsFuture;
+  final ApiService _apiService = ApiService();
   final PlaylistService _playlistService = PlaylistService();
+
   bool _isSearching = false;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+
+  // The gradients are now imported, so we don't need to define them here.
 
   @override
   void initState() {
@@ -43,7 +42,7 @@ class _SahebjjiMaBoleSectionState extends State<SahebjjiMaBoleSection> {
 
   Future<void> _fetchData() async {
     setState(() {
-      _albumsFuture = ApiService().fetchAlbums();
+      _audioHomeDataFuture = _apiService.fetchAudioHomeData();
       _playlistsFuture =
           _playlistService.loadPlaylists().then((allPlaylists) async {
         final favoritesPlaylist =
@@ -109,8 +108,8 @@ class _SahebjjiMaBoleSectionState extends State<SahebjjiMaBoleSection> {
           const SizedBox(height: 15),
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.18,
-            child: FutureBuilder<List<AlbumModel>>(
-              future: _albumsFuture,
+            child: FutureBuilder<Map<String, dynamic>>(
+              future: _audioHomeDataFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -147,7 +146,7 @@ class _SahebjjiMaBoleSectionState extends State<SahebjjiMaBoleSection> {
                     ),
                   );
                 }
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                if (!snapshot.hasData || (snapshot.data!['latest'] as List).isEmpty) {
                   return Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Center(
@@ -165,203 +164,170 @@ class _SahebjjiMaBoleSectionState extends State<SahebjjiMaBoleSection> {
                     ),
                   );
                 }
-                if (_isSearching && _searchQuery.isNotEmpty) {
-                  List<AudioModel> allSongs = [];
-                  for (var album in snapshot.data!) {
-                    allSongs.addAll(album.songs);
-                  }
-                  List<AudioModel> filteredSongs = allSongs
-                      .where((song) => song.title
-                          .toLowerCase()
-                          .contains(_searchQuery.toLowerCase()))
-                      .toList();
-                  if (filteredSongs.isEmpty) {
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Text(
-                          'audio.noSongsFound'.tr(args: [_searchQuery]),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withOpacity(0.6),
-                            fontSize: 16,
+
+                final List<AlbumModel> latestAlbums =
+                    (snapshot.data!['latest'] as List).cast<AlbumModel>().take(2).toList();
+                
+                return GridView.builder(
+                  shrinkWrap: true,
+                  scrollDirection: Axis.horizontal,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 1,
+                    childAspectRatio: 0.45,
+                    crossAxisSpacing: 5,
+                    mainAxisSpacing: 8,
+                  ),
+                  itemCount: latestAlbums.length,
+                  itemBuilder: (context, index) {
+                    final album = latestAlbums[index];
+                    // Use the imported gradients list
+                    Gradient gradient = gradients[index % gradients.length];
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AlbumDetailScreen(
+                              album: album,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Card(
+                        color: Theme.of(context).colorScheme.surface,
+                        clipBehavior: Clip.antiAlias,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        elevation: 0,
+                        child: Container(
+                          height: MediaQuery.of(context).size.height * 0.17,
+                          decoration: BoxDecoration(
+                            gradient: gradient,
+                          ),
+                          child: Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: SizedBox(
+                                  width: 130,
+                                  height: 200,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12.0),
+                                    child: Image.network(
+                                      album.coverImage,
+                                      fit: BoxFit.fill,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        return Container(
+                                          height: 200,
+                                          width: 200,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .surfaceContainerHighest,
+                                          child: Icon(
+                                            Icons.album,
+                                            size: 60,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurfaceVariant,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Flexible(
+                                flex: 2,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                      top: 8.0, bottom: 8, right: 8),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        width: 150,
+                                        child: Text(
+                                          'Jan 2025',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      Container(
+                                        width: 150,
+                                        child: Text(
+                                          album.title,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                            color: Colors.white,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      Expanded(child: const SizedBox(height: 4)),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.access_time,
+                                                color: Colors.white,
+                                                size: 15,
+                                              ),
+                                              const SizedBox(width: 5),
+                                              Text(
+                                                album.albumDuration??'2:00',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Container(
+                                            height: 20,
+                                            width: 50,
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(15)),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                'Play',
+                                                style: TextStyle(
+                                                  color: Colors.blue,
+                                                  fontSize: 14,
+                                                ),
+                                                maxLines: 1,
+                                                overflow:
+                                                    TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
                     );
-                  }
-                  return SongList(
-                    songs: filteredSongs,
-                    playlistService: PlaylistService(),
-                  );
-                } else {
-                  List<AlbumModel> filteredAlbums = snapshot.data!;
-                  return GridView.builder(
-                    shrinkWrap: true,
-                    scrollDirection: Axis.horizontal,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 1,
-                      childAspectRatio: 0.45,
-                      crossAxisSpacing: 5,
-                      mainAxisSpacing: 8,
-                    ),
-                    itemCount: filteredAlbums.length,
-                    itemBuilder: (context, index) {
-                      final album = filteredAlbums[index];
-                      // Use the gradient based on the index
-                      Gradient gradient = gradients[index % gradients.length];
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => AlbumDetailScreen(
-                                album: album,
-                              ),
-                            ),
-                          );
-                        },
-                        child: Card(
-                          color: Theme.of(context).colorScheme.surface,
-                          clipBehavior: Clip.antiAlias,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                          elevation: 0,
-                          child: Container(
-                            height: MediaQuery.of(context).size.height * 0.17,
-                            decoration: BoxDecoration(
-                              gradient: gradient,
-                            ),
-                            child: Row(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: SizedBox(
-                                    width: 130,
-                                    height: 200,
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(12.0),
-                                      child: Image.network(
-                                        album.albumArt,
-                                        fit: BoxFit.fill,
-                                        errorBuilder:
-                                            (context, error, stackTrace) {
-                                          return Container(
-                                            height: 200,
-                                            width: 200,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .surfaceContainerHighest,
-                                            child: Icon(
-                                              Icons.album,
-                                              size: 60,
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .onSurfaceVariant,
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Flexible(
-                                  flex: 2,
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(
-                                        top: 8.0, bottom: 8, right: 8),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                          width: 150,
-                                          child: Text(
-                                            album.albumDate,
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 14,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        Container(
-                                          width: 150,
-                                          child: Text(
-                                            album.title,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                              color: Colors.white,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        Expanded(
-                                            child: const SizedBox(height: 4)),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Icon(
-                                                  Icons.access_time,
-                                                  color: Colors.white,
-                                                  size: 15,
-                                                ),
-                                                const SizedBox(width: 5),
-                                                Text(
-                                                  album.albumDuration,
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 14,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            Container(
-                                              height: 20,
-                                              width: 50,
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                borderRadius: BorderRadius.all(
-                                                    Radius.circular(15)),
-                                              ),
-                                              child: Center(
-                                                child: Text(
-                                                  'Play',
-                                                  style: TextStyle(
-                                                    color: Colors.blue,
-                                                    fontSize: 14,
-                                                  ),
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                }
+                  },
+                );
               },
             ),
           ),

@@ -10,7 +10,7 @@ class Playlist {
   factory Playlist.fromJson(Map<String, dynamic> json) {
     var songsList = json['songs'] as List;
     List<AudioModel> parsedSongs =
-        songsList.map((songJson) => AudioModel.fromJson(songJson)).toList();
+        songsList.map((songJson) => AudioModel.fromDetailsJson(songJson)).toList();
     return Playlist(
       name: json['name'],
       songs: parsedSongs,

@@ -40,7 +40,7 @@ class AlbumServiceNew {
     try {
       // Create an AudioSource for each song in the playlist
       final audioSources = songs
-          .map((song) => AudioSource.uri(Uri.parse(song.songUrl)))
+          .map((song) => AudioSource.uri(Uri.parse(song.audioUrl)))
           .toList();
 
       // Create a ConcatenatingAudioSource to play songs one after another
@@ -65,7 +65,7 @@ class AlbumServiceNew {
   Future<void> play(AudioModel song) async {
     try {
       await _audioPlayer
-          .setAudioSource(AudioSource.uri(Uri.parse(song.songUrl)));
+          .setAudioSource(AudioSource.uri(Uri.parse(song.audioUrl)));
       await _audioPlayer.play();
       debugPrint('AlbumServiceNew: Now playing single song: ${song.title}');
     } catch (e) {
@@ -133,8 +133,8 @@ class AlbumServiceNew {
     final prefs = await SharedPreferences.getInstance();
     final list = await loadRecentlyPlayed();
 
-    final filteredList = list.where((l) => l != album.id).toList();
-    await prefs.setStringList(_recentlyPlayedKey, [album.id, ...filteredList]);
+    final filteredList = list.where((l) => l != album.id.toString()).toList();
+    await prefs.setStringList(_recentlyPlayedKey, [album.id.toString(), ...filteredList]);
     return true;
   }
 }

@@ -30,7 +30,7 @@ class AlbumCard extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   Image.network(
-                    album.albumArt,
+                    album.coverImage,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
@@ -91,7 +91,7 @@ class AlbumCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    album.artist,
+                    album.artist ?? '',
                     style: TextStyle(
                       color: Colors.grey[600],
                       fontSize: 12,
@@ -101,7 +101,7 @@ class AlbumCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${album.songs.length} songs',
+                    '${album.songs!.length} songs',
                     style: TextStyle(
                       color: Colors.grey[600],
                       fontSize: 12,

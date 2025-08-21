@@ -14,6 +14,6 @@ class SongDisplayModel {
   });
 
   String get title => audioModel.title;
-  String get songUrl => audioModel.songUrl;
-  String get imageUrl => audioModel.imageUrl;
+  String get songUrl => audioModel.audioUrl;
+  // String get imageUrl => audioModel.imageUrl;
 }

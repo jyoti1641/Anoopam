@@ -1,6 +1,6 @@
 // models/category_item.dart
 class CategoryItem {
-  final String id;
+  final int id;
   final String title;
   final String cover_image;
 
@@ -12,7 +12,7 @@ class CategoryItem {
 
   factory CategoryItem.fromJson(Map<String, dynamic> json) {
     return CategoryItem(
-      id: json['id'] as String,
+      id: json['id'],
       title: json['title'] as String,
       cover_image: json['cover_image'] as String,
     );
