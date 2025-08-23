@@ -1,16 +1,19 @@
+// lib/screens/wallpapers_screen.dart
+
 import 'package:anoopam_mission/Views/Gallery/wallpaper_detail_screen.dart';
 import 'package:anoopam_mission/data/photo_service.dart';
-import 'package:anoopam_mission/models/wallpaper_models.dart';
 import 'package:flutter/material.dart';
+import 'package:anoopam_mission/models/wallpaper_models.dart';
 
-class WallpapersScreen extends StatefulWidget {
-  const WallpapersScreen({super.key});
+class GalleryWallpapersScreen extends StatefulWidget {
+  const GalleryWallpapersScreen({super.key});
 
   @override
-  State<WallpapersScreen> createState() => _WallpapersScreenState();
+  State<GalleryWallpapersScreen> createState() =>
+      _GalleryWallpapersScreenState();
 }
 
-class _WallpapersScreenState extends State<WallpapersScreen> {
+class _GalleryWallpapersScreenState extends State<GalleryWallpapersScreen> {
   List<WallpaperAlbum> _albums = [];
   bool _isLoading = false;
   String? _errorMessage;

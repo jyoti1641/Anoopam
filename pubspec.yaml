@@ -111,6 +111,10 @@ flutter:
     - assets/images/person1.png
     - assets/images/person2.png
     - assets/images/person3.png
+    - assets/images/thakorji_darshan_thumbnail.png
+    - assets/images/sahebji_darshan_thumbnail.png
+    - assets/images/sahebji_gallery_thumbnail.png
+    - assets/images/wallpaper_thumbnail.png
     #Logos
     - assets/logos/Mission.png
     # Environment file
