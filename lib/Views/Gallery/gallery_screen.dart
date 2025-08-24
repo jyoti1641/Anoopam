@@ -71,7 +71,7 @@ class GalleryScreenState extends State<GalleryScreen> {
       Album(
         id: 0,
         name: 'Wallpaper',
-        thumbnailUrl: 'assets/images/wallpaper_thumbnail.png',
+        thumbnailUrl: 'assets/images/wallpaper.png',
       ),
     ];
 
@@ -82,9 +82,9 @@ class GalleryScreenState extends State<GalleryScreen> {
         // Filter out any API albums that have the same name as the special ones
         final filteredApiAlbums = fetchedAlbums.where((album) =>
             album.name != 'Thakorji Darshan' &&
-            album.name != 'Wallpaper' &&
             album.name != 'Sahebji Darshan' &&
-            album.name != 'Sahebji Gallery');
+            album.name != 'Sahebji Gallery' &&
+            album.name != 'Wallpaper');
 
         // Combine the local special albums with the filtered API albums
         _albums = [...specialAlbums, ...filteredApiAlbums];
@@ -225,7 +225,8 @@ class GalleryScreenState extends State<GalleryScreen> {
                                   bool isLocalAsset =
                                       album.name == 'Thakorji Darshan' ||
                                           album.name == 'Sahebji Darshan' ||
-                                          album.name == 'Sahebji Gallery';
+                                          album.name == 'Sahebji Gallery' ||
+                                          album.name == 'Wallpaper';
                                   return GestureDetector(
                                     onTap: () => _onAlbumTap(album),
                                     child: Container(

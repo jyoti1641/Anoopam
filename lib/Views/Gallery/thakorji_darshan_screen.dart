@@ -5,6 +5,7 @@ import 'package:anoopam_mission/data/photo_service.dart';
 import 'package:anoopam_mission/models/photo.dart';
 import 'package:anoopam_mission/models/thakorji_models.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 
 class ThakorjiDarshanScreen extends StatefulWidget {
@@ -188,7 +189,9 @@ class _ThakorjiDarshanScreenState extends State<ThakorjiDarshanScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       appBar: AppBar(
+        foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
         title: const Text('Thakorji Darshan'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -203,10 +206,10 @@ class _ThakorjiDarshanScreenState extends State<ThakorjiDarshanScreen> {
               children: [
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 15),
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(25),
                     ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<Country>(
@@ -230,49 +233,100 @@ class _ThakorjiDarshanScreenState extends State<ThakorjiDarshanScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.calendar_today),
-                  onPressed: () async {
-                    final DateTime? picked = await showDatePicker(
-                      context: context,
-                      initialDate: _selectedDate ?? DateTime.now(),
-                      firstDate: DateTime(2000),
-                      lastDate: DateTime(2101),
-                    );
-                    if (picked != null && _selectedCenter != null) {
-                      _fetchPhotosForDate(picked);
-                    }
-                  },
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 15, vertical: 14),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: GestureDetector(
+                      onTap: () async {
+                        final DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: _selectedDate ?? DateTime.now(),
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2101),
+                        );
+                        if (picked != null && _selectedCenter != null) {
+                          _fetchPhotosForDate(picked);
+                        }
+                      },
+                      child: Row(
+                        children: [
+                          SvgPicture.asset(
+                            'assets/icons/calendar.svg',
+                            // color: Colors.white,
+                            height: 16,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            _selectedDate == null
+                                ? 'Select Date'
+                                : DateFormat.yMMMd().format(_selectedDate!),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
-          SizedBox(
-            height: 48,
-            child: _centers.isEmpty && _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _centers.length,
-                    itemBuilder: (context, index) {
-                      final center = _centers[index];
-                      final isSelected = _selectedCenter?.id == center.id;
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                        child: ChoiceChip(
-                          label: Text(center.title),
-                          selected: isSelected,
-                          onSelected: (bool selected) {
-                            if (selected) {
-                              _fetchPhotosForCenter(center);
-                            }
-                          },
-                        ),
-                      );
-                    },
-                  ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: SizedBox(
+              height: 35,
+              child: _centers.isEmpty && _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _centers.length,
+                      itemBuilder: (context, index) {
+                        final center = _centers[index];
+                        final isSelected = _selectedCenter?.id == center.id;
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: ChoiceChip(
+                            selectedColor: const Color(0xFF034DA2),
+                            disabledColor: Colors.grey,
+                            backgroundColor: Colors.grey.shade200,
+                            label: Text(
+                              center.title,
+                              textAlign: TextAlign.center,
+                            ),
+                            checkmarkColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                  20), // Increase this value as needed
+                              side: BorderSide(
+                                color: isSelected
+                                    ? Colors.transparent
+                                    : Colors.grey,
+                              ),
+                            ),
+                            labelPadding:
+                                const EdgeInsets.symmetric(horizontal: 4.0),
+                            labelStyle: TextStyle(
+                                color: isSelected ? Colors.white : Colors.black,
+                                fontSize: 12,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal),
+                            selected: isSelected,
+                            onSelected: (bool selected) {
+                              if (selected) {
+                                _fetchPhotosForCenter(center);
+                              }
+                            },
+                          ),
+                        );
+                      },
+                    ),
+            ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 30),
           _isLoading
               ? const Expanded(
                   child: Center(child: CircularProgressIndicator()))
@@ -286,7 +340,7 @@ class _ThakorjiDarshanScreenState extends State<ThakorjiDarshanScreen> {
                       : Expanded(
                           child: SingleChildScrollView(
                             child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Padding(
                                   padding: const EdgeInsets.symmetric(
@@ -295,30 +349,45 @@ class _ThakorjiDarshanScreenState extends State<ThakorjiDarshanScreen> {
                                     _thakorjiPhotos!.title.split(' ')[0],
                                     style: const TextStyle(
                                         fontSize: 20,
+                                        color: Color(0xFF034DA2),
                                         fontWeight: FontWeight.bold),
                                   ),
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16.0),
-                                  child: Text(
-                                    DateFormat.yMMMMd().format(DateTime.parse(
-                                        _thakorjiPhotos!.timestamp
-                                            .split('-')
-                                            .reversed
-                                            .join('-'))),
-                                    style: const TextStyle(color: Colors.grey),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SvgPicture.asset(
+                                        'assets/icons/calendar.svg',
+                                        // color: Colors.white,
+                                        height: 16,
+                                      ),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        DateFormat.yMMMMd().format(
+                                            DateTime.parse(_thakorjiPhotos!
+                                                .timestamp
+                                                .split('-')
+                                                .reversed
+                                                .join('-'))),
+                                        style:
+                                            const TextStyle(color: Colors.grey),
+                                      ),
+                                    ],
                                   ),
                                 ),
                                 const SizedBox(height: 16),
                                 GridView.builder(
                                   shrinkWrap: true,
+                                  padding: const EdgeInsets.all(16),
                                   physics: const NeverScrollableScrollPhysics(),
                                   gridDelegate:
                                       const SliverGridDelegateWithFixedCrossAxisCount(
                                     crossAxisCount: 2,
-                                    crossAxisSpacing: 10,
-                                    mainAxisSpacing: 10,
+                                    crossAxisSpacing: 16,
+                                    mainAxisSpacing: 16,
                                     childAspectRatio: 1.0,
                                   ),
                                   itemCount: _thakorjiPhotos!.images.length,

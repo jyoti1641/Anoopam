@@ -4,6 +4,7 @@ import 'package:anoopam_mission/Views/Gallery/sahebji_darshan_detail_screen.dart
 import 'package:anoopam_mission/data/photo_service.dart';
 import 'package:anoopam_mission/models/sahebji_darshan_models.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 
 class SahebjiDarshanScreen extends StatefulWidget {
@@ -109,7 +110,9 @@ class _SahebjiDarshanScreenState extends State<SahebjiDarshanScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       appBar: AppBar(
+        foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
         title: const Text('Sahebji Darshan'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -127,11 +130,15 @@ class _SahebjiDarshanScreenState extends State<SahebjiDarshanScreen> {
                 padding: const EdgeInsets.all(12.0),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(25),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.calendar_today),
+                    SvgPicture.asset(
+                      'assets/icons/calendar.svg',
+                      // color: Colors.white,
+                      height: 16,
+                    ),
                     const SizedBox(width: 10),
                     Text(
                       _startDate == null || _endDate == null
@@ -156,12 +163,12 @@ class _SahebjiDarshanScreenState extends State<SahebjiDarshanScreen> {
                             onRefresh: () => _fetchAlbums(page: 1),
                             child: GridView.builder(
                               controller: _scrollController,
-                              padding: const EdgeInsets.all(10),
+                              padding: const EdgeInsets.all(16),
                               gridDelegate:
                                   const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
-                                crossAxisSpacing: 10,
-                                mainAxisSpacing: 10,
+                                crossAxisSpacing: 16,
+                                mainAxisSpacing: 16,
                                 childAspectRatio: 1.0,
                               ),
                               itemCount: _albums.length + (_isLoading ? 1 : 0),
@@ -198,41 +205,66 @@ class _SahebjiDarshanScreenState extends State<SahebjiDarshanScreen> {
                                                           size: 40,
                                                           color: Colors.grey)),
                                         ),
-                                        Positioned(
-                                          bottom: 0,
-                                          left: 0,
-                                          right: 0,
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 8.0, vertical: 4.0),
-                                            color: Colors.black54,
-                                            child: Text(
-                                              album.date,
-                                              style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 12),
-                                            ),
-                                          ),
-                                        ),
-                                        Positioned(
-                                          top: 8,
-                                          left: 8,
-                                          right: 8,
-                                          child: Text(
-                                            album.title,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              shadows: [
-                                                Shadow(
-                                                    blurRadius: 3.0,
-                                                    color: Colors.black,
-                                                    offset: Offset(1.0, 1.0))
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              begin: Alignment.topCenter,
+                                              end: Alignment.bottomCenter,
+                                              colors: [
+                                                Colors.transparent,
+                                                Colors.black.withOpacity(0.7),
                                               ],
                                             ),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.end,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Container(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 8.0,
+                                                      vertical: 4.0),
+                                                  decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              25),
+                                                      border: Border.all(
+                                                          color: Colors.white)),
+                                                  child: Text(
+                                                    album.date,
+                                                    style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 12),
+                                                  ),
+                                                ),
+                                                SizedBox(
+                                                  height: 10,
+                                                ),
+                                                Text(
+                                                  album.title,
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w400,
+                                                    shadows: [
+                                                      Shadow(
+                                                          blurRadius: 3.0,
+                                                          color: Colors.black,
+                                                          offset:
+                                                              Offset(1.0, 1.0))
+                                                    ],
+                                                  ),
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       ],

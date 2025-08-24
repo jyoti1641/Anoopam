@@ -60,7 +60,9 @@ class _SahebjiDarshanDetailScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       appBar: AppBar(
+        foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
         title: _details != null
             ? Text(
                 _details!.title
@@ -69,6 +71,7 @@ class _SahebjiDarshanDetailScreenState
                     .trim(), // Assuming the location is at the end of the title
               )
             : const Text('Sahebji Darshan'),
+        centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -84,24 +87,28 @@ class _SahebjiDarshanDetailScreenState
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Text(
-                              _details!.title,
-                              style: const TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold),
+                            const SizedBox(height: 10),
+                            SizedBox(
+                              width: 250,
+                              child: Text(
+                                _details!.title,
+                                style: const TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.w500),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                             const SizedBox(height: 8),
-                            // Assuming the date is part of the title or can be extracted.
-                            // If the date is not available, this can be removed.
-                            // The mockup shows the date in the app bar, which is
-                            // not feasible from the current details API response.
-                            // For simplicity, let's put it in the body.
                             if (_details!.title.contains('2024'))
                               Text(
                                 _details!.title.substring(
                                     _details!.title.indexOf('2024') - 7),
-                                style: const TextStyle(color: Colors.grey),
+                                style: const TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.w500),
+                                textAlign: TextAlign.center,
                               ),
                             const SizedBox(height: 16),
                             GridView.builder(
@@ -110,8 +117,8 @@ class _SahebjiDarshanDetailScreenState
                               gridDelegate:
                                   const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
-                                crossAxisSpacing: 10,
-                                mainAxisSpacing: 10,
+                                crossAxisSpacing: 16,
+                                mainAxisSpacing: 16,
                                 childAspectRatio: 1.0,
                               ),
                               itemCount: _details!.sahebjiDarshan.length,
@@ -141,39 +148,15 @@ class _SahebjiDarshanDetailScreenState
                                   },
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(10),
-                                    child: Stack(
-                                      fit: StackFit.expand,
-                                      children: [
-                                        Image.network(
-                                          imageUrl,
-                                          fit: BoxFit.cover,
-                                          errorBuilder:
-                                              (context, error, stackTrace) =>
-                                                  const Center(
-                                                      child: Icon(
-                                                          Icons.broken_image,
-                                                          size: 40,
-                                                          color: Colors.grey)),
-                                        ),
-                                        Positioned(
-                                          bottom: 0,
-                                          left: 0,
-                                          right: 0,
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 8.0, vertical: 4.0),
-                                            color: Colors.black54,
-                                            child: Text(
-                                              caption,
-                                              style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 10),
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                    child: Image.network(
+                                      imageUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error,
+                                              stackTrace) =>
+                                          const Center(
+                                              child: Icon(Icons.broken_image,
+                                                  size: 40,
+                                                  color: Colors.grey)),
                                     ),
                                   ),
                                 );

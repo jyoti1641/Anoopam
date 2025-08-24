@@ -60,7 +60,10 @@ class _WallpaperDetailsScreenState extends State<WallpaperDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       appBar: AppBar(
+        foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         title: Text(widget.albumTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -74,13 +77,13 @@ class _WallpaperDetailsScreenState extends State<WallpaperDetailsScreen> {
               : _details == null || _details!.mobileImages.isEmpty
                   ? const Center(child: Text('No mobile wallpapers found.'))
                   : GridView.builder(
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(16),
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                        childAspectRatio: 1.0,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: 0.7,
                       ),
                       itemCount: _details!.mobileImages.length,
                       itemBuilder: (context, index) {

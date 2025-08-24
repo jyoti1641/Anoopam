@@ -98,7 +98,9 @@ class _SahebjiGalleryScreenState extends State<SahebjiGalleryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       appBar: AppBar(
+        foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
         title: const Text('Sahebji Gallery'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -112,12 +114,13 @@ class _SahebjiGalleryScreenState extends State<SahebjiGalleryScreen> {
             child: Row(
               children: [
                 // Years Dropdown
-                Expanded(
+                Flexible(
+                  flex: 1,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 15),
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(25),
                     ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<int>(
@@ -134,7 +137,10 @@ class _SahebjiGalleryScreenState extends State<SahebjiGalleryScreen> {
                         items: yearsList.map((int year) {
                           return DropdownMenuItem<int>(
                             value: year,
-                            child: Text(year.toString()),
+                            child: Text(
+                              year.toString(),
+                              style: TextStyle(color: Colors.grey),
+                            ),
                           );
                         }).toList(),
                       ),
@@ -143,12 +149,13 @@ class _SahebjiGalleryScreenState extends State<SahebjiGalleryScreen> {
                 ),
                 const SizedBox(width: 8),
                 // Occasions Dropdown
-                Expanded(
+                Flexible(
+                  flex: 2,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 15),
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(25),
                     ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<SahebjiOccasion>(
@@ -165,7 +172,10 @@ class _SahebjiGalleryScreenState extends State<SahebjiGalleryScreen> {
                         items: _occasions.map((SahebjiOccasion occasion) {
                           return DropdownMenuItem<SahebjiOccasion>(
                             value: occasion,
-                            child: Text(occasion.name),
+                            child: Text(
+                              occasion.name,
+                              style: TextStyle(color: Colors.grey),
+                            ),
                           );
                         }).toList(),
                       ),
@@ -175,7 +185,6 @@ class _SahebjiGalleryScreenState extends State<SahebjiGalleryScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
           _isLoading
               ? const Expanded(
                   child: Center(child: CircularProgressIndicator()))
@@ -185,12 +194,12 @@ class _SahebjiGalleryScreenState extends State<SahebjiGalleryScreen> {
                           child: Text('No photos found for this selection.')))
                   : Expanded(
                       child: GridView.builder(
-                        padding: const EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(16),
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          crossAxisSpacing: 10,
-                          mainAxisSpacing: 10,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
                         ),
                         itemCount: _galleryImages.length,
                         itemBuilder: (context, index) {

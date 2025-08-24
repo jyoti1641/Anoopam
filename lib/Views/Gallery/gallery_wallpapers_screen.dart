@@ -2,8 +2,11 @@
 
 import 'package:anoopam_mission/Views/Gallery/wallpaper_detail_screen.dart';
 import 'package:anoopam_mission/data/photo_service.dart';
+import 'package:anoopam_mission/providers/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:anoopam_mission/models/wallpaper_models.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:provider/provider.dart';
 
 class GalleryWallpapersScreen extends StatefulWidget {
   const GalleryWallpapersScreen({super.key});
@@ -64,7 +67,10 @@ class _GalleryWallpapersScreenState extends State<GalleryWallpapersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       appBar: AppBar(
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
         title: const Text('Wallpapers'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -78,29 +84,49 @@ class _GalleryWallpapersScreenState extends State<GalleryWallpapersScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.shade400),
+                borderRadius: BorderRadius.circular(25),
               ),
               child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: _selectedYear,
-                  hint: const Text('Years'),
-                  isExpanded: true,
-                  icon: const Icon(Icons.search),
-                  onChanged: (String? newValue) {
-                    if (newValue != null) {
-                      setState(() {
-                        _selectedYear = newValue;
-                      });
-                      _fetchWallpapers();
-                    }
-                  },
-                  items: yearsList.map((String year) {
-                    return DropdownMenuItem<String>(
-                      value: year,
-                      child: Text(year),
-                    );
-                  }).toList(),
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: SvgPicture.asset(
+                        'assets/icons/search_blue.svg',
+                        color: Colors.blue, // Use Colors.blue for visibility
+                        height: 16,
+                      ),
+                    ),
+                    prefixIconConstraints: BoxConstraints(maxHeight: 16),
+                    hintText: 'Year',
+                    hintStyle: const TextStyle(color: Colors.grey),
+                  ),
+                  child: DropdownButton<String>(
+                    value: _selectedYear,
+                    isExpanded: true,
+                    icon: const SizedBox.shrink(), // Hiding the default icon
+                    onChanged: (String? newValue) {
+                      if (newValue != null) {
+                        setState(() {
+                          _selectedYear = newValue;
+                        });
+                        _fetchWallpapers();
+                      }
+                    },
+                    items: yearsList.map((String year) {
+                      return DropdownMenuItem<String>(
+                        value: year,
+                        child: Text(
+                          year,
+                          style: TextStyle(fontSize: 18, color: Colors.grey),
+                        ),
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
             ),
@@ -114,17 +140,21 @@ class _GalleryWallpapersScreenState extends State<GalleryWallpapersScreen> {
                         ? const Center(
                             child: Text('No wallpapers found for this year.'))
                         : GridView.builder(
-                            padding: const EdgeInsets.all(10),
+                            padding: const EdgeInsets.all(16),
                             gridDelegate:
                                 const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
-                              crossAxisSpacing: 10,
-                              mainAxisSpacing: 10,
-                              childAspectRatio: 1.0,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                              childAspectRatio: 0.7,
                             ),
                             itemCount: _albums.length,
                             itemBuilder: (context, index) {
                               final album = _albums[index];
+                              final themeProvider =
+                                  Provider.of<ThemeProvider>(context);
+                              final isDark =
+                                  themeProvider.currentTheme == ThemeMode.dark;
                               return GestureDetector(
                                 onTap: () {
                                   Navigator.push(
@@ -153,25 +183,38 @@ class _GalleryWallpapersScreenState extends State<GalleryWallpapersScreen> {
                                                     size: 40,
                                                     color: Colors.grey)),
                                       ),
-                                      Positioned(
-                                        bottom: 0,
-                                        left: 0,
-                                        right: 0,
-                                        child: Container(
-                                          padding: const EdgeInsets.all(8.0),
-                                          color: Colors.black54,
-                                          child: Text(
-                                            album.title,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              shadows: [
-                                                Shadow(
-                                                    blurRadius: 3.0,
-                                                    color: Colors.black,
-                                                    offset: Offset(1.0, 1.0))
-                                              ],
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          color: Theme.of(context).cardColor,
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topCenter,
+                                            end: Alignment.bottomCenter,
+                                            colors: [
+                                              Colors.transparent,
+                                              Colors.black.withOpacity(0.6),
+                                            ],
+                                          ),
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(
+                                              bottom: 8.0),
+                                          child: Align(
+                                            alignment: Alignment.bottomCenter,
+                                            child: Text(
+                                              album.title,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                                shadows: [
+                                                  Shadow(
+                                                      blurRadius: 3.0,
+                                                      color: Colors.black,
+                                                      offset: Offset(1.0, 1.0))
+                                                ],
+                                              ),
                                             ),
                                           ),
                                         ),

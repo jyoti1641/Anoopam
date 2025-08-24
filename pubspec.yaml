@@ -83,7 +83,7 @@ flutter:
     - assets/flags/us.png
     #Icons
     - assets/icons/
-    - assets/images/
+    - assets/images/  # This is the corrected line
     - assets/icons/home_icon.png
     - assets/icons/more_icon.png
     - assets/icons/audio_icon.png
@@ -97,6 +97,8 @@ flutter:
     - assets/icons/brahmanirzar.png
     - assets/icons/donation.png
     - assets/icons/events.png
+    - assets/icons/search_blue.svg
+    - assets/icons/calendar.svg
     - assets/icons/enlighten.png
     - assets/icons/mantralekhan.png
     - assets/icons/vandan_sahebji.png
@@ -111,10 +113,11 @@ flutter:
     - assets/images/person1.png
     - assets/images/person2.png
     - assets/images/person3.png
+    - assets/images/wallpaper.png
     - assets/images/thakorji_darshan_thumbnail.png
     - assets/images/sahebji_darshan_thumbnail.png
     - assets/images/sahebji_gallery_thumbnail.png
-    - assets/images/wallpaper_thumbnail.png
+    
     #Logos
     - assets/logos/Mission.png
     # Environment file
