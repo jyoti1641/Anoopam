@@ -1,7 +1,9 @@
 // lib/Views/Audio/widgets/song_list_new.dart
 
 import 'dart:io';
+import 'package:anoopam_mission/Views/Audio/models/album.dart';
 import 'package:anoopam_mission/Views/Audio/services/album_service_new.dart';
+import 'package:anoopam_mission/models/album.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
@@ -19,6 +21,7 @@ class SongList extends StatefulWidget {
   final List<AudioModel> songs;
   final bool showActionButtons;
   final bool showAlbumArt;
+  final String albumCoverUrl;
   final PlaylistService playlistService;
   final VoidCallback? onFavoritesUpdated;
   final Function(int)? onSongTap;
@@ -27,6 +30,7 @@ class SongList extends StatefulWidget {
     super.key,
     required this.songs,
     this.showActionButtons = true,
+    required this.albumCoverUrl,
     this.showAlbumArt = true,
     required this.playlistService,
     this.onFavoritesUpdated,
@@ -42,7 +46,8 @@ class _SongListState extends State<SongList> {
   String? _currentPlayingSongUrl;
   _PlayerProcessingState _playerProcessingState = _PlayerProcessingState.idle;
   bool _isPlaying = false;
-  List<bool> _isFavoriteByIndex = [];
+
+  // Removed _isFavoriteByIndex and related logic
   List<bool> _isLoadingByIndex = [];
 
   @override
@@ -51,16 +56,20 @@ class _SongListState extends State<SongList> {
     _audioService.audioPlayer.playerStateStream.listen((playerState) {
       if (mounted) {
         setState(() {
-          _playerProcessingState = _mapProcessingState(playerState.processingState);
+          _playerProcessingState =
+              _mapProcessingState(playerState.processingState);
           _isPlaying = playerState.playing;
 
           if (_playerProcessingState == _PlayerProcessingState.loading ||
               _playerProcessingState == _PlayerProcessingState.buffering) {
             _initializeLoadingStatusAsAllFalse();
-            final currentAudioSource = _audioService.audioPlayer.sequenceState?.currentSource;
-            if (currentAudioSource != null && currentAudioSource is UriAudioSource) {
+            final currentAudioSource =
+                _audioService.audioPlayer.sequenceState?.currentSource;
+            if (currentAudioSource != null &&
+                currentAudioSource is UriAudioSource) {
               final currentSongUri = currentAudioSource.uri.toString();
-              final index = widget.songs.indexWhere((song) => song.audioUrl == currentSongUri);
+              final index = widget.songs
+                  .indexWhere((song) => song.audioUrl == currentSongUri);
               if (index != -1) {
                 _isLoadingByIndex[index] = true;
               }
@@ -106,7 +115,6 @@ class _SongListState extends State<SongList> {
   }
 
   void _initializeStates() {
-    _initializeFavoriteStatus();
     _initializeLoadingStatusAsAllFalse();
   }
 
@@ -123,15 +131,7 @@ class _SongListState extends State<SongList> {
     super.dispose();
   }
 
-  void _initializeFavoriteStatus() async {
-    final favSongList = await widget.playlistService.getOrCreateFavoritesPlaylist();
-    final songUrls = favSongList.songs.map((s) => s.audioUrl).toSet();
-    if (mounted) {
-      setState(() {
-        _isFavoriteByIndex = widget.songs.map((s) => songUrls.contains(s.audioUrl)).toList();
-      });
-    }
-  }
+  // The old _initializeFavoriteStatus() is removed.
 
   @override
   void didUpdateWidget(covariant SongList oldWidget) {
@@ -169,35 +169,24 @@ class _SongListState extends State<SongList> {
     widget.onSongTap?.call(tappedIndex);
   }
 
-  void _toggleFavorite(AudioModel song, int tappedIndex) async {
-    if (tappedIndex < 0 || tappedIndex >= _isFavoriteByIndex.length) {
-      _showSnackBar('Error: Invalid song index.');
-      return;
-    }
-    setState(() {
-      _isFavoriteByIndex[tappedIndex] = !_isFavoriteByIndex[tappedIndex];
-      if (_isFavoriteByIndex[tappedIndex]) {
-        _showSnackBar('${song.title} added to favorites!');
-      } else {
-        _showSnackBar('${song.title} removed from favorites.');
-      }
-    });
+  // Updated _toggleFavorite method
+  Future<void> _toggleFavorite(AudioModel song) async {
     try {
       await widget.playlistService.toggleFavoriteSong(song);
+      _showSnackBar('Favorite status updated for ${song.title}');
       widget.onFavoritesUpdated?.call();
     } catch (e) {
-      setState(() {
-        _isFavoriteByIndex[tappedIndex] = !_isFavoriteByIndex[tappedIndex];
-      });
       _showSnackBar('Failed to update favorite status: $e');
     }
+    // No need to manually update state here, the FutureBuilder handles it
   }
 
   Future<void> _downloadSong(AudioModel song) async {
     _showSnackBar('Downloading ${song.title}...');
     try {
       final directory = await getApplicationDocumentsDirectory();
-      final fileName = '${song.title.replaceAll(RegExp(r'[^\w\s.-]'), '_')}.mp3';
+      final fileName =
+          '${song.title.replaceAll(RegExp(r'[^\w\s.-]'), '_')}.mp3';
       final filePath = '${directory.path}/$fileName';
       final response = await http.get(Uri.parse(song.audioUrl));
       if (response.statusCode == 200) {
@@ -205,7 +194,8 @@ class _SongListState extends State<SongList> {
         await file.writeAsBytes(response.bodyBytes);
         _showSnackBar('${song.title} downloaded to ${directory.path}');
       } else {
-        _showSnackBar('Failed to download ${song.title}. Status: ${response.statusCode}');
+        _showSnackBar(
+            'Failed to download ${song.title}. Status: ${response.statusCode}');
       }
     } catch (e) {
       _showSnackBar('Error downloading ${song.title}: $e');
@@ -213,7 +203,8 @@ class _SongListState extends State<SongList> {
   }
 
   void _shareSong(AudioModel song) {
-    Share.share('Check out this song from Anoopam Mission: ${song.title}\n\n${song.audioUrl}');
+    Share.share(
+        'Check out this song from Anoopam Mission: ${song.title}\n\n${song.audioUrl}');
   }
 
   void _showSnackBar(String message) {
@@ -224,7 +215,7 @@ class _SongListState extends State<SongList> {
     }
   }
 
-  void _addSongToPlaylist(AudioModel song) async {
+  void _addSongToPlaylist(AudioModel song, String coverimage) async {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -232,122 +223,157 @@ class _SongListState extends State<SongList> {
           songsToAdd: [song],
           playlistService: widget.playlistService,
           onPlaylistsUpdated: widget.onFavoritesUpdated,
+          albumCoverUrl: coverimage,
         ),
       ),
     ).then((_) {
-      _initializeFavoriteStatus();
+      // No need to call _initializeFavoriteStatus()
     });
   }
 
-  void _showOptionsBottomSheet(BuildContext context, AudioModel song, int index) {
-    final isFavorite = _isFavoriteByIndex[index];
+  // Updated _showOptionsBottomSheet method
+  void _showOptionsBottomSheet(
+      BuildContext context, AudioModel song, int index, AlbumModel album) {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      song.title,
-                      style: Theme.of(context).textTheme.titleMedium,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+        return FutureBuilder<bool>(
+          future: widget.playlistService.isSongFavorite(song),
+          builder: (context, snapshot) {
+            bool isFavorite = snapshot.data ?? false;
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          song.title,
+                          style: Theme.of(context).textTheme.titleMedium,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                Wrap(
+                  children: <Widget>[
+                    ListTile(
+                      leading: const Icon(Icons.download),
+                      title: const Text('Download'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _downloadSong(song);
+                      },
                     ),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(height: 1),
-            Wrap(
-              children: <Widget>[
-                ListTile(
-                  leading: const Icon(Icons.download),
-                  title: const Text('Download'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _downloadSong(song);
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.playlist_add),
-                  title: const Text('Add to Playlist'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _addSongToPlaylist(song);
-                  },
-                ),
-                ListTile(
-                  leading: Icon(
-                    isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: isFavorite ? Colors.red : null,
-                  ),
-                  title: Text(isFavorite ? 'Unlike' : 'Like'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _toggleFavorite(song, index);
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.share),
-                  title: const Text('Share'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _shareSong(song);
-                  },
+                    ListTile(
+                      leading: const Icon(Icons.playlist_add),
+                      title: const Text('Add to Playlist'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _addSongToPlaylist(song, widget.albumCoverUrl);
+                      },
+                    ),
+                    ListTile(
+                      leading: Icon(
+                        isFavorite ? Icons.favorite : Icons.favorite_border,
+                        color: isFavorite ? Colors.red : null,
+                      ),
+                      title: Text(isFavorite ? 'Unlike' : 'Like'),
+                      onTap: () async {
+                        Navigator.pop(context);
+                        await _toggleFavorite(song);
+                        // No need for setState() here, FutureBuilder handles it
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.share),
+                      title: const Text('Share'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _shareSong(song);
+                      },
+                    ),
+                  ],
                 ),
               ],
-            ),
-          ],
+            );
+          },
         );
       },
     );
   }
 
   @override
-Widget build(BuildContext context) {
-  return ListView.builder(
-    shrinkWrap: true,
-    physics: const NeverScrollableScrollPhysics(),
-    itemCount: widget.songs.length,
-    itemBuilder: (context, index) {
-      final song = widget.songs[index];
-      
-      return Container(
-        key: ValueKey(song.audioUrl),
-        margin: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 0.0),
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 2.0, vertical: 1.0),
-          onTap: () => _playPauseSong(song, index),
-          
-          // Display the song title
-          title: Text(
-            song.title,
-            style: const TextStyle(fontWeight: FontWeight.w500),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: widget.songs.length,
+      itemBuilder: (context, index) {
+        final song = widget.songs[index];
+        AlbumModel album = AlbumModel(
+            coverImage: '',
+            id: 0,
+            title: 'new',
+            artist: '',
+            albumDate: '',
+            albumDuration: '',
+            songs: []);
+
+        return Container(
+          key: ValueKey(song.audioUrl),
+          margin: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: ListTile(
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 2.0, vertical: 2.0),
+            onTap: () => _playPauseSong(song, index),
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  song.title,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w500, fontSize: 16.0),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4.0),
+              ],
+            ),
+            subtitle: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Flexible(child: Text(song.artist ?? '')),
+                const Text(' : '),
+                Text(song.audioDuration ?? ''),
+              ],
+            ),
+            trailing: widget.showActionButtons
+                ? GestureDetector(
+                    onTap: () {
+                      _showOptionsBottomSheet(context, song, index, album);
+                    },
+                    child: Icon(Icons.more_vert),
+                  )
+                : null,
           ),
-          
-          // Display the song duration
-          subtitle: Text(song.audioDuration ?? ''),
-          
-          // Display the three-dot menu icon
-          trailing: widget.showActionButtons
-              ? IconButton(
-                  icon: const Icon(Icons.more_vert),
-                  onPressed: () {
-                    _showOptionsBottomSheet(context, song, index);
-                  },
-                )
-              : null,
-        ),
-      );
-    },
-  );
-}}
+        );
+      },
+      separatorBuilder: (context, index) {
+        return Divider(
+          height: 1,
+          color: Colors.grey.shade300,
+          indent: 20,
+          endIndent: 22,
+        );
+      },
+    );
+  }
+}
 
 enum _PlayerProcessingState { idle, loading, buffering, ready, completed }

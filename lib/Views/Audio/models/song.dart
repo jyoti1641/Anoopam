@@ -1,4 +1,3 @@
-
 // // lib/Views/Audio/models/song.dart
 // // Or wherever your AudioModel is defined, ensure this path is consistent across your project.
 
@@ -53,7 +52,7 @@ class AudioModel {
   final String? artist;
 
   AudioModel({
-     this.id,
+    this.id,
     required this.title,
     required this.audioUrl,
     this.audioDuration,
@@ -78,5 +77,15 @@ class AudioModel {
       'duration': audioDuration,
       'artist': artist,
     };
+  }
+
+  factory AudioModel.fromStoredJson(Map<String, dynamic> json) {
+    return AudioModel(
+      id: json['id'] as int?,
+      title: json['audio_name'] as String,
+      audioUrl: json['audio_file'] as String,
+      audioDuration: json['duration'] as String?,
+      artist: json['artist'] as String?,
+    );
   }
 }

@@ -19,15 +19,13 @@ class PlaylistDetailScreen extends StatelessWidget {
     required this.onPlaylistUpdated,
   });
 
-    void _playAllSongs(BuildContext context, List<AudioModel> songs) {
+  void _playAllSongs(BuildContext context, List<AudioModel> songs) {
     if (songs.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('album.noSongsToPlay'.tr())),
       );
       return;
     }
-
-     
 
     // Call your actual audio player service to start playing the list.
     // This assumes AlbumServiceNew.instance.startPlaylist(songs) would internally
@@ -104,62 +102,94 @@ class PlaylistDetailScreen extends StatelessWidget {
                 ),
               ),
             )
-          : ListView(
-            children: [
-               Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 5.0, horizontal: 17),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          playlist.name,
-                          style: TextStyle(
-                            fontSize: 20.0,
-                            fontWeight: FontWeight.w600,
+          : ListView(children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                child: Container(
+                  height: 300,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(15),
+                    image: playlist.coverImageUrl != null &&
+                            playlist.coverImageUrl!.isNotEmpty
+                        ? DecorationImage(
+                            image: NetworkImage(playlist.coverImageUrl!),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                    color: playlist.coverImageUrl == null ||
+                            playlist.coverImageUrl!.isEmpty
+                        ? Theme.of(context).colorScheme.surfaceVariant
+                        : null,
+                  ),
+                  child: playlist.coverImageUrl == null ||
+                          playlist.coverImageUrl!.isEmpty
+                      ? Center(
+                          child: Icon(
+                            Icons.audiotrack,
+                            size: 20,
                             color: Theme.of(context).colorScheme.onSurface,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      // Action Buttons on the right
-                      Row(
-                        children: [
-                          // Menu Button (opens bottom sheet)
-                          // Play All Button (visible directly on the screen)
-                          IconButton(
-                            icon: const Icon(Icons.play_circle_fill),
-                            color: Colors.indigo,
-                            iconSize: 40.0,
-                            onPressed: () => _playAllSongs(context, playlist.songs),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                        )
+                      : null,
                 ),
-              SongList(
-              songs: playlist.songs,
-              showActionButtons:
-                  true, // You might want to show action buttons for songs within a playlist
-              showAlbumArt: true, playlistService: _playlistService,
-                onSongTap: (int tappedIndex) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AudioPlayerScreen(
-                          songs: playlist.songs, // Pass the potentially filtered list
-                          initialIndex: tappedIndex,
+              ),
+              const SizedBox(height: 6),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 5.0, horizontal: 17),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        playlist.name,
+                        style: TextStyle(
+                          fontSize: 20.0,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    );
-                  },
-            ),
-            ]
-          ),
+                    ),
+                    const SizedBox(width: 16),
+                    // Action Buttons on the right
+                    Row(
+                      children: [
+                        // Menu Button (opens bottom sheet)
+                        // Play All Button (visible directly on the screen)
+                        IconButton(
+                          icon: const Icon(Icons.play_circle_fill),
+                          color: Colors.indigo,
+                          iconSize: 40.0,
+                          onPressed: () =>
+                              _playAllSongs(context, playlist.songs),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              SongList(
+                songs: playlist.songs,
+                showActionButtons:
+                    true, // You might want to show action buttons for songs within a playlist
+                showAlbumArt: true, playlistService: _playlistService,
+                onSongTap: (int tappedIndex) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AudioPlayerScreen(
+                        songs: playlist
+                            .songs, // Pass the potentially filtered list
+                        initialIndex: tappedIndex,
+                      ),
+                    ),
+                  );
+                },
+                albumCoverUrl: playlist.coverImageUrl!,
+              ),
+            ]),
     );
   }
 }

@@ -40,7 +40,8 @@ class AlbumDetailScreen extends StatelessWidget {
                         width: 120,
                         height: 120,
                         color: Colors.grey[300],
-                        child: const Icon(Icons.album, size: 80, color: Colors.grey),
+                        child: const Icon(Icons.album,
+                            size: 80, color: Colors.grey),
                       );
                     },
                   ),
@@ -97,7 +98,8 @@ class AlbumDetailScreen extends StatelessWidget {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 }
                 if (!snapshot.hasData || snapshot.data!.songs!.isEmpty) {
-                  return const Center(child: Text('No songs found in this album.'));
+                  return const Center(
+                      child: Text('No songs found in this album.'));
                 }
 
                 // Pass the songs list from the fetched full album to the SongList widget
@@ -108,6 +110,7 @@ class AlbumDetailScreen extends StatelessWidget {
                   showAlbumArt: true,
                   playlistService: _playlistService,
                   onFavoritesUpdated: () {},
+                  albumCoverUrl: album.coverImage,
                 );
               },
             ),

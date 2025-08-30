@@ -4,6 +4,7 @@ import 'package:anoopam_mission/Views/Wallpapers/wallpapers_screen.dart'; // <--
 import 'package:anoopam_mission/Views/Video/video_home_screen.dart';
 import 'package:anoopam_mission/Views/Gallery/gallery_screen.dart';
 import 'package:anoopam_mission/Views/Menu/settings_screen.dart';
+import 'package:anoopam_mission/Views/Home/home_screen.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 class DummyMoreScreen extends StatelessWidget {
@@ -53,6 +54,11 @@ class DummyMoreScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const AlbumScreen()),
+                );
+              } else if (item.label == 'menu.home'.tr()) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HomeScreen()),
                 );
               } else if (item.label == 'menu.wallpapers'.tr()) {
                 Navigator.push(

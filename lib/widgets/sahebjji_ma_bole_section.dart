@@ -18,15 +18,10 @@ class SahebjjiMaBoleSection extends StatefulWidget {
 
 class _SahebjjiMaBoleSectionState extends State<SahebjjiMaBoleSection> {
   late Future<Map<String, dynamic>> _audioHomeDataFuture;
-  late Future<List<Playlist>> _playlistsFuture;
+  late Future<List<Playlist>> _playlistsFuture; // Added this line
   final ApiService _apiService = ApiService();
   final PlaylistService _playlistService = PlaylistService();
-
-  bool _isSearching = false;
-  String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
-
-  // The gradients are now imported, so we don't need to define them here.
 
   @override
   void initState() {
@@ -44,20 +39,7 @@ class _SahebjjiMaBoleSectionState extends State<SahebjjiMaBoleSection> {
     setState(() {
       _audioHomeDataFuture = _apiService.fetchAudioHomeData();
       _playlistsFuture =
-          _playlistService.loadPlaylists().then((allPlaylists) async {
-        final favoritesPlaylist =
-            await _playlistService.getOrCreateFavoritesPlaylist();
-        if (!allPlaylists
-            .any((p) => p.name == PlaylistService.favoritesPlaylistName)) {
-          allPlaylists.add(favoritesPlaylist);
-        }
-        allPlaylists.sort((a, b) {
-          if (a.name == PlaylistService.favoritesPlaylistName) return -1;
-          if (b.name == PlaylistService.favoritesPlaylistName) return 1;
-          return a.name.compareTo(b.name);
-        });
-        return allPlaylists;
-      });
+          _playlistService.loadPlaylists(); // Simplified playlist loading
     });
   }
 
@@ -73,6 +55,7 @@ class _SahebjjiMaBoleSectionState extends State<SahebjjiMaBoleSection> {
           songsToAdd: null,
           playlistService: _playlistService,
           onPlaylistsUpdated: _refreshAllData,
+          albumCoverUrl: null, // albumCoverUrl is now optional
         ),
       ),
     ).then((_) {
@@ -146,7 +129,8 @@ class _SahebjjiMaBoleSectionState extends State<SahebjjiMaBoleSection> {
                     ),
                   );
                 }
-                if (!snapshot.hasData || (snapshot.data!['latest'] as List).isEmpty) {
+                if (!snapshot.hasData ||
+                    (snapshot.data!['latest'] as List).isEmpty) {
                   return Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Center(
@@ -166,8 +150,11 @@ class _SahebjjiMaBoleSectionState extends State<SahebjjiMaBoleSection> {
                 }
 
                 final List<AlbumModel> latestAlbums =
-                    (snapshot.data!['latest'] as List).cast<AlbumModel>().take(2).toList();
-                
+                    (snapshot.data!['latest'] as List)
+                        .cast<AlbumModel>()
+                        .take(2)
+                        .toList();
+
                 return GridView.builder(
                   shrinkWrap: true,
                   scrollDirection: Axis.horizontal,
@@ -180,7 +167,6 @@ class _SahebjjiMaBoleSectionState extends State<SahebjjiMaBoleSection> {
                   itemCount: latestAlbums.length,
                   itemBuilder: (context, index) {
                     final album = latestAlbums[index];
-                    // Use the imported gradients list
                     Gradient gradient = gradients[index % gradients.length];
                     return GestureDetector(
                       onTap: () {
@@ -272,7 +258,8 @@ class _SahebjjiMaBoleSectionState extends State<SahebjjiMaBoleSection> {
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
-                                      Expanded(child: const SizedBox(height: 4)),
+                                      Expanded(
+                                          child: const SizedBox(height: 4)),
                                       Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
@@ -286,7 +273,7 @@ class _SahebjjiMaBoleSectionState extends State<SahebjjiMaBoleSection> {
                                               ),
                                               const SizedBox(width: 5),
                                               Text(
-                                                album.albumDuration??'2:00',
+                                                album.albumDuration ?? '2:00',
                                                 style: TextStyle(
                                                   color: Colors.white,
                                                   fontSize: 14,
@@ -310,8 +297,7 @@ class _SahebjjiMaBoleSectionState extends State<SahebjjiMaBoleSection> {
                                                   fontSize: 14,
                                                 ),
                                                 maxLines: 1,
-                                                overflow:
-                                                    TextOverflow.ellipsis,
+                                                overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
                                           ),

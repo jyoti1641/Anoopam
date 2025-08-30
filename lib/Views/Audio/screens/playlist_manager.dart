@@ -8,12 +8,14 @@ import 'package:easy_localization/easy_localization.dart';
 class PlaylistManagerPage extends StatefulWidget {
   final List<AudioModel>?
       songsToAdd; // Nullable, if coming from "add to playlist"
+  final String? albumCoverUrl;
   final PlaylistService playlistService;
   final VoidCallback? onPlaylistsUpdated; // Callback for when playlists change
 
   const PlaylistManagerPage({
     super.key,
     this.songsToAdd,
+    this.albumCoverUrl,
     required this.playlistService,
     this.onPlaylistsUpdated,
   });
@@ -40,10 +42,8 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
     });
     final allPlaylists = await widget.playlistService.loadPlaylists();
     setState(() {
-      // Filter out the "Favorites" playlist
-      _userPlaylists = allPlaylists
-          .where((p) => p.name != PlaylistService.favoritesPlaylistName)
-          .toList();
+      // No longer need to filter out a "Favorites" playlist
+      _userPlaylists = allPlaylists.toList();
       _isLoading = false;
     });
   }
@@ -57,7 +57,6 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
   }
 
   Future<void> _createNewPlaylist() async {
-    // Navigate to the new screen to get the playlist name
     String? newPlaylistName = await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const CreateNewPlaylistScreen(),
@@ -71,13 +70,22 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
         return;
       }
       try {
-        await widget.playlistService
-            .addSongsToPlaylist(newPlaylistName, widget.songsToAdd ?? []);
-        // _newPlaylistNameController.clear(); // No longer needed here
+        await widget.playlistService.createPlaylist(newPlaylistName);
+
+        if (widget.songsToAdd != null && widget.songsToAdd!.isNotEmpty) {
+          await widget.playlistService.addSongsToPlaylist(
+            newPlaylistName,
+            widget.songsToAdd!,
+            widget.albumCoverUrl!,
+          );
+        }
         _showSnackBar(
             'playlist.created'.tr(namedArgs: {'name': newPlaylistName}));
+        await _loadUserPlaylists();
         widget.onPlaylistsUpdated?.call();
-        _loadUserPlaylists();
+        if (widget.songsToAdd != null && widget.songsToAdd!.isNotEmpty) {
+          Navigator.of(context).pop();
+        }
       } catch (e) {
         _showSnackBar(
             'playlist.errorCreating'.tr(namedArgs: {'error': e.toString()}));
@@ -86,18 +94,23 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
   }
 
   Future<void> _addSongToExistingPlaylist(Playlist playlist) async {
-    if (widget.songsToAdd != null) {
+    if (widget.songsToAdd != null && widget.songsToAdd!.isNotEmpty) {
       try {
         await widget.playlistService.addSongsToPlaylist(
           playlist.name,
-          widget.songsToAdd ?? [],
+          widget.songsToAdd!,
+          widget.albumCoverUrl!,
         );
-        final songNames = widget.songsToAdd?.map((e) => e.title) ?? [];
-        _showSnackBar('${songNames.join(', ')} added to ${playlist.name}!');
+        final songTitles = widget.songsToAdd!.map((s) => s.title).join(', ');
+        _showSnackBar('playlist.songsAdded'.tr(namedArgs: {
+          'songs': songTitles,
+          'playlistName': playlist.name,
+        }));
         widget.onPlaylistsUpdated?.call();
-        Navigator.of(context).pop(); // Go back after adding
+        Navigator.of(context).pop();
       } catch (e) {
-        _showSnackBar('Error adding song to playlist: $e');
+        _showSnackBar(
+            'playlist.errorAdding'.tr(namedArgs: {'error': e.toString()}));
       }
     }
   }

@@ -11,7 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:anoopam_mission/Views/Audio/screens/audio_player_screen.dart';
 
-
 class AlbumDetailScreen extends StatefulWidget {
   final AlbumModel album;
 
@@ -72,10 +71,14 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
           builder: (context) => PlaylistManagerPage(
             songsToAdd: songs,
             playlistService: PlaylistService(),
+            onPlaylistsUpdated: () {
+              // Handle the updated playlists
+              Navigator.pop(context);
+            },
+            albumCoverUrl: widget.album.coverImage,
           ),
         ),
-      ).then((_) {
-      });
+      ).then((_) {});
     }
 
     return SingleChildScrollView(
@@ -103,7 +106,8 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                         width: 80,
                         height: 80,
                         color: Colors.grey[300],
-                        child: const Icon(Icons.album, size: 50, color: Colors.grey),
+                        child: const Icon(Icons.album,
+                            size: 50, color: Colors.grey),
                       );
                     },
                   ),
@@ -189,7 +193,8 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
               )
             : Text(
                 widget.album.title,
-                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
+                style:
+                    const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
               ),
         centerTitle: true,
         actions: [
@@ -229,8 +234,13 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
           if (_isSearching && _searchQuery.isNotEmpty) {
             songs = songs
                 .where((song) =>
-                    (song.title.toLowerCase().contains(_searchQuery.toLowerCase())) ||
-                    ((song.artist?.toLowerCase().contains(_searchQuery.toLowerCase())) ?? false))
+                    (song.title
+                        .toLowerCase()
+                        .contains(_searchQuery.toLowerCase())) ||
+                    ((song.artist
+                            ?.toLowerCase()
+                            .contains(_searchQuery.toLowerCase())) ??
+                        false))
                 .toList();
             if (songs.isEmpty) {
               return Center(
@@ -245,27 +255,30 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
           return ListView(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 20),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 45),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(15.0),
                   child: Image.network(
                     albumDetails.coverImage,
                     width: double.infinity,
-                    height: 250,
+                    height: 300,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
                         width: double.infinity,
-                        height: 250,
+                        height: 300,
                         color: Colors.grey[300],
-                        child: const Icon(Icons.album, size: 150, color: Colors.grey),
+                        child: const Icon(Icons.album,
+                            size: 150, color: Colors.grey),
                       );
                     },
                   ),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 17),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 20),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -273,10 +286,10 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                       child: Text(
                         albumDetails.title,
                         style: const TextStyle(
-                          fontSize: 20.0,
+                          fontSize: 18.0,
                           fontWeight: FontWeight.w600,
                         ),
-                        maxLines: 2,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -299,6 +312,19 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                   ],
                 ),
               ),
+              SizedBox(
+                height: 5,
+              ),
+              Divider(
+                height: 1, // You can adjust the height of the divider
+                color:
+                    Colors.grey.shade300, // Customize the color of the divider
+                indent: 20, // Optional: add a leading space
+                endIndent: 25, // Optional: add a trailing space
+              ),
+              SizedBox(
+                height: 8,
+              ),
               SongList(
                 songs: songs,
                 showActionButtons: true,
@@ -315,6 +341,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                     ),
                   );
                 },
+                albumCoverUrl: albumDetails.coverImage,
               ),
             ],
           );
