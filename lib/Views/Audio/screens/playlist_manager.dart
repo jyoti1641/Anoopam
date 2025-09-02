@@ -1,4 +1,5 @@
 import 'package:anoopam_mission/Views/Audio/screens/create_new_playlist_screen.dart';
+import 'package:anoopam_mission/Views/Audio/screens/playlist_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:anoopam_mission/Views/Audio/models/playlist.dart';
 import 'package:anoopam_mission/Views/Audio/models/song.dart';
@@ -27,6 +28,7 @@ class PlaylistManagerPage extends StatefulWidget {
 class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
   List<Playlist> _userPlaylists = [];
   bool _isLoading = true;
+  bool _isGridView = false;
   final TextEditingController _newPlaylistNameController =
       TextEditingController();
 
@@ -41,8 +43,22 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
       _isLoading = true;
     });
     final allPlaylists = await widget.playlistService.loadPlaylists();
+
+    // Iterate through all playlists and update the cover image.
+    for (var playlist in allPlaylists) {
+      if (playlist.songs.isNotEmpty) {
+        // If the playlist has songs, use the last song's album cover.
+        final lastSong = playlist.songs.last;
+        playlist.coverImageUrl = lastSong.albumCoverUrl;
+      } else {
+        // If the playlist is empty, use a default image URL.
+        // This prevents the null check operator error.
+        playlist.coverImageUrl =
+            'https://example.com/default_placeholder.png'; // Replace with your actual default image URL
+      }
+    }
+
     setState(() {
-      // No longer need to filter out a "Favorites" playlist
       _userPlaylists = allPlaylists.toList();
       _isLoading = false;
     });
@@ -166,26 +182,76 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
               ? 'playlist.addTo'.tr()
               : 'playlist.manage'.tr(),
           style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
+              color: Theme.of(context).colorScheme.onSurface, fontSize: 18),
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: Icon(Icons.search),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 15.0),
+            child: GestureDetector(
+                child: Icon(Icons.add_circle_outline_rounded),
+                onTap: _createNewPlaylist),
+          )
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
+                // Padding(
+                //   padding: const EdgeInsets.all(16.0),
+                //   child: ElevatedButton.icon(
+                //     onPressed: _createNewPlaylist,
+                //     icon: const Icon(Icons.add),
+                //     label: Text('playlist.createNew'.tr()),
+                //     style: ElevatedButton.styleFrom(
+                //       minimumSize:
+                //           const Size.fromHeight(50), // Make button wider
+                //     ),
+                //   ),
+                // ),
+                SizedBox(
+                  height: 10,
+                ),
                 Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: ElevatedButton.icon(
-                    onPressed: _createNewPlaylist,
-                    icon: const Icon(Icons.add),
-                    label: Text('playlist.createNew'.tr()),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize:
-                          const Size.fromHeight(50), // Make button wider
-                    ),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Created Playlists',
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.w600),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _isGridView = !_isGridView;
+                              });
+                            },
+                            child: Icon(
+                              _isGridView ? Icons.list : Icons.grid_view,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        '${_userPlaylists.length.toString()} Playlists',
+                        style: TextStyle(fontSize: 14),
+                      )
+                    ],
                   ),
                 ),
+
                 Expanded(
                   child: _userPlaylists.isEmpty
                       ? Center(
@@ -198,52 +264,157 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
                             textAlign: TextAlign.center,
                           ),
                         )
-                      : ListView.builder(
-                          itemCount: _userPlaylists.length,
-                          itemBuilder: (context, index) {
-                            final playlist = _userPlaylists[index];
-                            return Card(
-                              margin: const EdgeInsets.symmetric(
-                                  horizontal: 16.0, vertical: 8.0),
-                              elevation: 2.0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8.0),
+                      : _isGridView
+                          ? GridView.builder(
+                              padding: const EdgeInsets.all(16.0),
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                crossAxisSpacing: 10.0,
+                                mainAxisSpacing: 10.0,
+                                childAspectRatio:
+                                    0.7, // Adjust this as needed for your design
                               ),
-                              child: ListTile(
-                                title: Text(playlist.name),
-                                subtitle: Text('playlist.songCount'.tr(
-                                    namedArgs: {
-                                      'count': playlist.songs.length.toString()
-                                    })),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    if (widget.songsToAdd != null)
-                                      IconButton(
-                                        icon: const Icon(Icons.add),
-                                        onPressed: () =>
-                                            _addSongToExistingPlaylist(
-                                                playlist),
-                                        tooltip: 'playlist.addSongTooltip'.tr(),
+                              itemCount: _userPlaylists.length,
+                              itemBuilder: (context, index) {
+                                final playlist = _userPlaylists[index];
+                                return _buildGridItem(
+                                    playlist); // A new method to build the grid item
+                              },
+                            )
+                          : ListView.builder(
+                              itemCount: _userPlaylists.length,
+                              itemBuilder: (context, index) {
+                                final playlist = _userPlaylists[index];
+                                return GestureDetector(
+                                  onTap: () {
+                                    // Navigate to the playlist details screen
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            PlaylistDetailScreen(
+                                          playlist: playlist,
+                                          onPlaylistUpdated: () {
+                                            _loadUserPlaylists();
+                                          },
+                                        ),
                                       ),
-                                    IconButton(
-                                      icon: Icon(Icons.delete,
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .error),
-                                      onPressed: () =>
-                                          _deletePlaylist(playlist.name),
-                                      tooltip: 'playlist.deleteTooltip'.tr(),
+                                    ).then((result) {
+                                      // Optional: A final check to ensure data is fresh.
+                                      if (result == true) {
+                                        _loadUserPlaylists();
+                                      }
+                                    });
+                                  },
+                                  child: Padding(
+                                    padding:
+                                        const EdgeInsets.only(bottom: 15.0),
+                                    child: ListTile(
+                                      leading: ClipRRect(
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                        child: Image.network(
+                                          playlist.coverImageUrl!,
+                                          width: 60,
+                                          height: 60,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                            return Container(
+                                              width: 60,
+                                              height: 60,
+                                              color: Colors.grey.shade200,
+                                              child: const Icon(
+                                                  Icons.music_note,
+                                                  size: 24),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      title: Text(playlist.name),
+                                      // subtitle: Text('playlist.songCount'
+                                      //     .tr(namedArgs: {
+                                      //   'count': playlist.songs.length.toString()
+                                      // })),
+                                      trailing: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          if (widget.songsToAdd != null)
+                                            IconButton(
+                                              icon: const Icon(Icons.add),
+                                              onPressed: () =>
+                                                  _addSongToExistingPlaylist(
+                                                      playlist),
+                                              tooltip: 'playlist.addSongTooltip'
+                                                  .tr(),
+                                            ),
+                                          // IconButton(
+                                          //   icon: Icon(Icons.delete,
+                                          //       color: Theme.of(context)
+                                          //           .colorScheme
+                                          //           .error),
+                                          //   onPressed: () =>
+                                          //       _deletePlaylist(playlist.name),
+                                          //   tooltip: 'playlist.deleteTooltip'.tr(),
+                                          // ),
+                                        ],
+                                      ),
                                     ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
+                                  ),
+                                );
+                              },
+                            ),
                 ),
               ],
             ),
+    );
+  }
+
+  Widget _buildGridItem(Playlist playlist) {
+    return GestureDetector(
+      onTap: () {
+        // Navigate to the playlist details screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PlaylistDetailScreen(
+              playlist: playlist,
+              onPlaylistUpdated: () {
+                _loadUserPlaylists();
+              },
+            ),
+          ),
+        );
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8.0),
+            child: Image.network(
+              playlist.coverImageUrl!,
+              width: double.infinity,
+              height: 110, // Adjust height as needed
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  width: double.infinity,
+                  height: 110,
+                  color: Colors.grey.shade200,
+                  child: const Icon(Icons.music_note, size: 48),
+                );
+              },
+            ),
+          ),
+          SizedBox(height: 8.0),
+          Text(
+            playlist.name,
+            style: TextStyle(fontSize: 18),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
     );
   }
 }

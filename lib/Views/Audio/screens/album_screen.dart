@@ -52,6 +52,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
   Future<void> _fetchData() async {
     setState(() {
       _audioHomeDataFuture = _apiService.fetchAudioHomeData();
+      _playlistsFuture = _playlistService.loadPlaylists();
     });
   }
 
@@ -592,6 +593,15 @@ class _AlbumScreenState extends State<AlbumScreen> {
   }
 
   Widget _buildPlaylistCard(Playlist playlist) {
+    String? displayCoverImage;
+    if (playlist.songs.isNotEmpty) {
+      // The last song in the list is considered the latest added.
+      final latestSong = playlist.songs.last;
+      displayCoverImage = latestSong.albumCoverUrl;
+    } else {
+      // If the playlist has no songs, use the playlist's default cover image, if any.
+      displayCoverImage = playlist.coverImageUrl;
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -600,28 +610,25 @@ class _AlbumScreenState extends State<AlbumScreen> {
           height: 120,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
-            image: playlist.coverImageUrl != null &&
-                    playlist.coverImageUrl!.isNotEmpty
+            image: displayCoverImage != null && displayCoverImage.isNotEmpty
                 ? DecorationImage(
-                    image: NetworkImage(playlist.coverImageUrl!),
+                    image: NetworkImage(displayCoverImage),
                     fit: BoxFit.cover,
                   )
                 : null,
-            color: playlist.coverImageUrl == null ||
-                    playlist.coverImageUrl!.isEmpty
+            color: displayCoverImage == null || displayCoverImage.isEmpty
                 ? Theme.of(context).colorScheme.surfaceVariant
                 : null,
           ),
-          child:
-              playlist.coverImageUrl == null || playlist.coverImageUrl!.isEmpty
-                  ? Center(
-                      child: Icon(
-                        Icons.audiotrack,
-                        size: 20,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    )
-                  : null,
+          child: displayCoverImage == null || displayCoverImage.isEmpty
+              ? Center(
+                  child: Icon(
+                    Icons.audiotrack,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                )
+              : null,
         ),
         const SizedBox(height: 6),
         SizedBox(

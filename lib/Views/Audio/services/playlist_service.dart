@@ -4,10 +4,10 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:anoopam_mission/Views/Audio/models/playlist.dart';
 import 'package:anoopam_mission/Views/Audio/models/song.dart';
+import 'package:http/http.dart' as http;
 
 class PlaylistService {
   static const _playlistsKey = 'user_playlists';
-  // New key to store favorite song URLs
   static const _favoritesKey = 'user_favorites';
 
   Future<List<Playlist>> loadPlaylists() async {
@@ -43,79 +43,57 @@ class PlaylistService {
     }
   }
 
+  Future<Playlist?> getPlaylist(String playlistName) async {
+    final allPlaylists = await loadPlaylists();
+    try {
+      return allPlaylists.firstWhere((p) => p.name == playlistName);
+    } catch (e) {
+      return null;
+    }
+  }
+
   Future<void> addSongToPlaylist(
       String playlistName, AudioModel song, String albumCoverUrl) async {
     List<Playlist> playlists = await loadPlaylists();
     Playlist? targetPlaylist;
-
     try {
       targetPlaylist = playlists.firstWhere((p) => p.name == playlistName);
     } catch (e) {
       targetPlaylist = Playlist(name: playlistName, songs: []);
       playlists.add(targetPlaylist);
     }
-
     if (!targetPlaylist.songs.any((s) => s.audioUrl == song.audioUrl)) {
       targetPlaylist.songs.add(song);
       if (targetPlaylist.coverImageUrl == null ||
           targetPlaylist.coverImageUrl!.isEmpty) {
-        targetPlaylist.coverImageUrl = albumCoverUrl;
+        targetPlaylist.coverImageUrl = song.albumCoverUrl;
       }
     }
     await savePlaylists(playlists);
   }
 
-  // NEW METHOD to add multiple songs to a playlist
   Future<void> addSongsToPlaylist(String playlistName,
       List<AudioModel> songsToAdd, String albumCoverUrl) async {
     List<Playlist> playlists = await loadPlaylists();
     Playlist? targetPlaylist;
-
     try {
       targetPlaylist = playlists.firstWhere((p) => p.name == playlistName);
     } catch (e) {
       targetPlaylist = Playlist(name: playlistName, songs: []);
       playlists.add(targetPlaylist);
     }
-
-    // Add each song from the list, avoiding duplicates
     for (var song in songsToAdd) {
       if (!targetPlaylist.songs.any((s) => s.audioUrl == song.audioUrl)) {
         targetPlaylist.songs.add(song);
       }
     }
-
-    // Set the cover image if the playlist previously had none
     if (targetPlaylist.coverImageUrl == null ||
         targetPlaylist.coverImageUrl!.isEmpty) {
-      targetPlaylist.coverImageUrl = albumCoverUrl;
+      if (songsToAdd.isNotEmpty) {
+        targetPlaylist.coverImageUrl = songsToAdd.first.albumCoverUrl;
+      }
     }
-
     await savePlaylists(playlists);
-  }
-
-  Future<Playlist> getFavorites() async {
-    final List<String> favoriteUrls = await _loadFavorites();
-    // In a real app, you would fetch the full AudioModel objects from a
-    // database or API based on the URLs. For this example, we create dummy
-    // AudioModels. You might need to adjust this part based on your data source.
-    final List<AudioModel> favoriteSongs = favoriteUrls
-        .map((url) => AudioModel(
-              audioUrl: url,
-              title: 'Favorite Song', // Placeholder
-              artist: 'Unknown Artist', // Placeholder
-              audioDuration: '0:00', // Placeholder
-              id: 0,
-            ))
-        .toList();
-
-    // Now get the real data for favorite songs by checking albums
-
-    return Playlist(
-      name: 'Favorites',
-      songs: favoriteSongs,
-      coverImageUrl: null,
-    );
   }
 
   Future<void> removeSongFromPlaylist(
@@ -140,36 +118,57 @@ class PlaylistService {
     await savePlaylists(playlists);
   }
 
-  // New method to load favorite song URLs
-  Future<List<String>> _loadFavorites() async {
+  Future<List<int>> _loadFavoriteIds() async {
     final prefs = await SharedPreferences.getInstance();
     final List<String>? favorites = prefs.getStringList(_favoritesKey);
-    return favorites ?? [];
+    return favorites?.map(int.parse).toList() ?? [];
   }
 
-  // New method to save favorite song URLs
-  Future<void> _saveFavorites(List<String> favoriteUrls) async {
+  Future<void> _saveFavoriteIds(List<int> favoriteIds) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_favoritesKey, favoriteUrls);
+    final List<String> idStrings =
+        favoriteIds.map((id) => id.toString()).toList();
+    await prefs.setStringList(_favoritesKey, idStrings);
   }
 
-  // Method to toggle a song's favorite status
-  Future<void> toggleFavoriteSong(AudioModel song) async {
-    List<String> favoriteUrls = await _loadFavorites();
-    final String audioUrl = song.audioUrl;
-
-    if (favoriteUrls.contains(audioUrl)) {
-      favoriteUrls.remove(audioUrl);
-    } else {
-      favoriteUrls.add(audioUrl);
+  // CRITICAL METHOD: The type conversion happens here.
+  Future<List<AudioModel>> loadFavorites() async {
+    List<int> favoriteIds = await _loadFavoriteIds();
+    if (favoriteIds.isEmpty) {
+      return [];
     }
+    try {
+      final String idsString = favoriteIds.join(',');
+      final response = await http.get(Uri.parse(
+          'https://anoopam.org/wp-json/mobile/v1/tracks?ids=$idsString'));
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonResponse = json.decode(response.body);
 
-    await _saveFavorites(favoriteUrls);
+        // This is the line that performs the type conversion.
+        return jsonResponse
+            .map((json) => AudioModel.fromApiJson(json))
+            .toList();
+      } else {
+        return Future.error(
+            'Failed to load favorite songs from API. Status: ${response.statusCode}');
+      }
+    } catch (e) {
+      return Future.error('Error fetching favorites: $e');
+    }
   }
 
-  // Method to check if a song is a favorite
+  Future<void> toggleFavoriteSong(AudioModel song) async {
+    List<int> favoriteIds = await _loadFavoriteIds();
+    if (favoriteIds.contains(song.id)) {
+      favoriteIds.remove(song.id);
+    } else {
+      favoriteIds.add(song.id!);
+    }
+    await _saveFavoriteIds(favoriteIds);
+  }
+
   Future<bool> isSongFavorite(AudioModel song) async {
-    List<String> favoriteUrls = await _loadFavorites();
-    return favoriteUrls.contains(song.audioUrl);
+    List<int> favoriteIds = await _loadFavoriteIds();
+    return favoriteIds.contains(song.id);
   }
 }

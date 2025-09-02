@@ -63,24 +63,27 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
     );
   }
 
-  Widget _buildAlbumBottomSheet(BuildContext context, List<AudioModel> songs) {
-    void _addSongsToPlaylist(List<AudioModel> songs) async {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => PlaylistManagerPage(
-            songsToAdd: songs,
-            playlistService: PlaylistService(),
-            onPlaylistsUpdated: () {
-              // Handle the updated playlists
-              Navigator.pop(context);
-            },
-            albumCoverUrl: widget.album.coverImage,
-          ),
+  void _addSongsToPlaylist(List<AudioModel> songs) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PlaylistManagerPage(
+          songsToAdd: songs,
+          playlistService: PlaylistService(),
+          onPlaylistsUpdated: () {
+            // Handle the updated playlists
+          },
+          albumCoverUrl: widget.album.coverImage,
         ),
-      ).then((_) {});
+      ),
+    );
+    if (result == true) {
+      // Pop this screen and pass a 'true' result to the previous screen.
+      Navigator.of(context).pop(true);
     }
+  }
 
+  Widget _buildAlbumBottomSheet(BuildContext context, List<AudioModel> songs) {
     return SingleChildScrollView(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -176,6 +179,12 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
+        leading: MaterialButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: Icon(Icons.arrow_back_rounded),
+        ),
         title: _isSearching
             ? TextField(
                 controller: _searchController,

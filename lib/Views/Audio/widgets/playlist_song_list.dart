@@ -1,54 +1,47 @@
-// lib/Views/Audio/widgets/song_list_new.dart
+// lib/Views/Audio/widgets/playlist_song_list.dart
 
-import 'dart:io';
-import 'package:anoopam_mission/Views/Audio/models/album.dart';
+import 'package:anoopam_mission/Views/Audio/screens/album_detail_screen.dart';
 import 'package:anoopam_mission/Views/Audio/services/album_service_new.dart';
-import 'package:anoopam_mission/models/album.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:anoopam_mission/Views/Audio/models/song.dart';
+import 'package:anoopam_mission/Views/Audio/models/playlist.dart';
+import 'package:anoopam_mission/Views/Audio/services/playlist_service.dart';
+import 'package:anoopam_mission/Views/Audio/screens/playlist_manager.dart';
+import 'package:anoopam_mission/Views/Audio/services/audio_service_new.dart';
+import 'package:anoopam_mission/Views/Audio/models/album.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:just_audio/just_audio.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
-// Import necessary models and services
-import 'package:anoopam_mission/Views/Audio/models/playlist.dart';
-import 'package:anoopam_mission/Views/Audio/models/song.dart';
-import 'package:anoopam_mission/Views/Audio/services/playlist_service.dart';
-import 'package:anoopam_mission/Views/Audio/services/audio_service_new.dart';
-import 'package:anoopam_mission/Views/Audio/screens/playlist_manager.dart';
-
-class SongList extends StatefulWidget {
+class PlaylistSongList extends StatefulWidget {
   final List<AudioModel> songs;
-  final bool showActionButtons;
-  final bool showAlbumArt;
-  final String albumCoverUrl;
   final PlaylistService playlistService;
+  final Playlist playlist;
   final VoidCallback? onFavoritesUpdated;
   final Function(int)? onSongTap;
 
-  const SongList({
+  const PlaylistSongList({
     super.key,
     required this.songs,
-    this.showActionButtons = true,
-    required this.albumCoverUrl,
-    this.showAlbumArt = true,
+    required this.playlist,
     required this.playlistService,
     this.onFavoritesUpdated,
     this.onSongTap,
   });
 
   @override
-  State<SongList> createState() => _SongListState();
+  State<PlaylistSongList> createState() => _PlaylistSongListState();
 }
 
-class _SongListState extends State<SongList> {
+class _PlaylistSongListState extends State<PlaylistSongList> {
   final AlbumServiceNew _audioService = AlbumServiceNew.instance;
   String? _currentPlayingSongUrl;
+  bool _isAlbumLoading = false;
   _PlayerProcessingState _playerProcessingState = _PlayerProcessingState.idle;
   bool _isPlaying = false;
-
-  // Removed _isFavoriteByIndex and related logic
   List<bool> _isLoadingByIndex = [];
 
   @override
@@ -66,8 +59,7 @@ class _SongListState extends State<SongList> {
             _initializeLoadingStatusAsAllFalse();
             final currentAudioSource =
                 _audioService.audioPlayer.sequenceState?.currentSource;
-            if (currentAudioSource != null &&
-                currentAudioSource is UriAudioSource) {
+            if (currentAudioSource is UriAudioSource) {
               final currentSongUri = currentAudioSource.uri.toString();
               final index = widget.songs
                   .indexWhere((song) => song.audioUrl == currentSongUri);
@@ -94,7 +86,6 @@ class _SongListState extends State<SongList> {
         });
       }
     });
-
     _initializeStates();
   }
 
@@ -128,14 +119,7 @@ class _SongListState extends State<SongList> {
   }
 
   @override
-  void dispose() {
-    super.dispose();
-  }
-
-  // The old _initializeFavoriteStatus() is removed.
-
-  @override
-  void didUpdateWidget(covariant SongList oldWidget) {
+  void didUpdateWidget(covariant PlaylistSongList oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.songs.length != oldWidget.songs.length ||
         !_areSongListsEqual(widget.songs, oldWidget.songs)) {
@@ -170,7 +154,6 @@ class _SongListState extends State<SongList> {
     widget.onSongTap?.call(tappedIndex);
   }
 
-  // Updated _toggleFavorite method
   Future<void> _toggleFavorite(AudioModel song) async {
     try {
       await widget.playlistService.toggleFavoriteSong(song);
@@ -179,7 +162,76 @@ class _SongListState extends State<SongList> {
     } catch (e) {
       _showSnackBar('Failed to update favorite status: $e');
     }
-    // No need to manually update state here, the FutureBuilder handles it
+  }
+
+  void _showSnackBar(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
+  }
+
+  void _addSongToPlaylist(AudioModel song) async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PlaylistManagerPage(
+          songsToAdd: [song],
+          playlistService: widget.playlistService,
+          onPlaylistsUpdated: widget.onFavoritesUpdated,
+          albumCoverUrl: song.albumCoverUrl,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _removeSongFromPlaylist(AudioModel song) async {
+    try {
+      // First, remove the song from the service (database/shared preferences)
+      await widget.playlistService
+          .removeSongFromPlaylist(widget.playlist.name, song);
+      _showSnackBar('Removed "${song.title}" from "${widget.playlist.name}"');
+
+      // Now, remove the song from the local list to update the UI
+      widget.playlist.songs.removeWhere((s) => s.audioUrl == song.audioUrl);
+
+      // Trigger the parent's refresh method to rebuild the UI
+      widget.onFavoritesUpdated?.call();
+    } catch (e) {
+      _showSnackBar('Failed to remove song from playlist: $e');
+    }
+  }
+
+  Future<void> _viewAlbum(AudioModel song) async {
+    setState(() {
+      _isAlbumLoading = true;
+    });
+    try {
+      final album = await ApiService().fetchAlbumDetails(song.albumId!);
+      // setState(() {
+      //   _isAlbumLoading = false;
+      // });
+      if (album != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AlbumDetailScreen(album: album),
+          ),
+        );
+      } else {
+        _showSnackBar('Failed to find album for this song.');
+      }
+    } catch (e) {
+      setState(() {
+        _isAlbumLoading = false;
+      });
+      _showSnackBar('Error navigating to album: $e');
+    } finally {
+      setState(() {
+        _isAlbumLoading = false;
+      });
+    }
   }
 
   Future<void> _downloadSong(AudioModel song) async {
@@ -224,36 +276,10 @@ class _SongListState extends State<SongList> {
 
   void _shareSong(AudioModel song) {
     Share.share(
-        'Check out this song from Anoopam Mission: ${song.title}\n\n${song.audioUrl}');
+        'Check out this song: ${song.title} by ${song.artist}. Listen here: ${song.audioUrl}');
   }
 
-  void _showSnackBar(String message) {
-    if (mounted) {
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(message)));
-    }
-  }
-
-  void _addSongToPlaylist(AudioModel song, String coverimage) async {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PlaylistManagerPage(
-          songsToAdd: [song],
-          playlistService: widget.playlistService,
-          onPlaylistsUpdated: widget.onFavoritesUpdated,
-          albumCoverUrl: coverimage,
-        ),
-      ),
-    ).then((_) {
-      // No need to call _initializeFavoriteStatus()
-    });
-  }
-
-  // Updated _showOptionsBottomSheet method
-  void _showOptionsBottomSheet(
-      BuildContext context, AudioModel song, int index, AlbumModel album) {
+  void _showOptionsBottomSheet(BuildContext context, AudioModel song) {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
@@ -268,57 +294,97 @@ class _SongListState extends State<SongList> {
                   padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
                   child: Row(
                     children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8.0),
+                        child: Image.network(
+                          song.albumCoverUrl!,
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              width: 50,
+                              height: 50,
+                              color: Colors.grey.shade200,
+                              child: const Icon(Icons.music_note, size: 24),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 16.0),
                       Expanded(
-                        child: Text(
-                          song.title,
-                          style: Theme.of(context).textTheme.titleMedium,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              song.title,
+                              style: Theme.of(context).textTheme.titleMedium,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              song.artist ?? '',
+                              style: Theme.of(context).textTheme.bodySmall,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
                 const Divider(height: 1),
-                Wrap(
-                  children: <Widget>[
-                    ListTile(
-                      leading: const Icon(Icons.download),
-                      title: const Text('Download'),
-                      onTap: () {
-                        Navigator.pop(context);
-                        _downloadSong(song);
-                      },
-                    ),
-                    ListTile(
-                      leading: const Icon(Icons.playlist_add),
-                      title: const Text('Add to Playlist'),
-                      onTap: () {
-                        Navigator.pop(context);
-                        _addSongToPlaylist(song, widget.albumCoverUrl);
-                      },
-                    ),
-                    ListTile(
-                      leading: Icon(
-                        isFavorite ? Icons.favorite : Icons.favorite_border,
-                        color: isFavorite ? Colors.red : null,
-                      ),
-                      title: Text(isFavorite ? 'Unlike' : 'Like'),
-                      onTap: () async {
-                        Navigator.pop(context);
-                        await _toggleFavorite(song);
-                        // No need for setState() here, FutureBuilder handles it
-                      },
-                    ),
-                    ListTile(
-                      leading: const Icon(Icons.share),
-                      title: const Text('Share'),
-                      onTap: () {
-                        Navigator.pop(context);
-                        _shareSong(song);
-                      },
-                    ),
-                  ],
+                ListTile(
+                  leading: const Icon(Icons.download),
+                  title: const Text('Download'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _downloadSong(song);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.playlist_add),
+                  title: const Text('Add to Other Playlist'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _addSongToPlaylist(song);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.remove_circle_outline),
+                  title: const Text('Remove from this Playlist'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _removeSongFromPlaylist(song);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.album),
+                  title: const Text('View Album'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _viewAlbum(song);
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: isFavorite ? Colors.red : null,
+                  ),
+                  title: Text(isFavorite ? 'Unlike' : 'Like'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    await _toggleFavorite(song);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.share),
+                  title: const Text('Share'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _shareSong(song);
+                  },
                 ),
               ],
             );
@@ -330,20 +396,13 @@ class _SongListState extends State<SongList> {
 
   @override
   Widget build(BuildContext context) {
+    final reversedSongs = widget.songs.reversed.toList();
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: widget.songs.length,
+      itemCount: reversedSongs.length,
       itemBuilder: (context, index) {
-        final song = widget.songs[index];
-        AlbumModel album = AlbumModel(
-            coverImage: '',
-            id: 0,
-            title: 'new',
-            artist: '',
-            albumDate: '',
-            albumDuration: '',
-            songs: []);
+        final song = reversedSongs[index];
 
         return Container(
           key: ValueKey(song.audioUrl),
@@ -352,18 +411,29 @@ class _SongListState extends State<SongList> {
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 2.0, vertical: 2.0),
             onTap: () => _playPauseSong(song, index),
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  song.title,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w500, fontSize: 16.0),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4.0),
-              ],
+            leading: ClipRRect(
+              borderRadius: BorderRadius.circular(8.0),
+              child: Image.network(
+                song.albumCoverUrl!,
+                width: 50,
+                height: 50,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: 50,
+                    height: 50,
+                    color: Colors.grey.shade200,
+                    child: const Icon(Icons.music_note, size: 24),
+                  );
+                },
+              ),
+            ),
+            title: Text(
+              song.title,
+              style:
+                  const TextStyle(fontWeight: FontWeight.w500, fontSize: 16.0),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             subtitle: Row(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -373,14 +443,12 @@ class _SongListState extends State<SongList> {
                 Text(song.audioDuration ?? ''),
               ],
             ),
-            trailing: widget.showActionButtons
-                ? GestureDetector(
-                    onTap: () {
-                      _showOptionsBottomSheet(context, song, index, album);
-                    },
-                    child: Icon(Icons.more_vert),
-                  )
-                : null,
+            trailing: GestureDetector(
+              onTap: () {
+                _showOptionsBottomSheet(context, song);
+              },
+              child: const Icon(Icons.more_vert),
+            ),
           ),
         );
       },
