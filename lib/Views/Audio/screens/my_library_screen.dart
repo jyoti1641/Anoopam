@@ -3,6 +3,8 @@
 import 'dart:io';
 
 import 'package:anoopam_mission/Views/Audio/models/recently_played_model.dart';
+import 'package:anoopam_mission/Views/Audio/screens/downloaded_file_screen.dart';
+import 'package:anoopam_mission/Views/Audio/screens/favorite_songs_screen.dart';
 import 'package:anoopam_mission/Views/Audio/screens/playlist_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -12,7 +14,6 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:anoopam_mission/Views/Audio/screens/playlist_detail_screen.dart';
 import 'package:anoopam_mission/Views/Audio/services/playlist_service.dart';
 
 class MyLibraryScreen extends StatefulWidget {
@@ -25,7 +26,7 @@ class MyLibraryScreen extends StatefulWidget {
 class _MyLibraryScreenState extends State<MyLibraryScreen> {
   final PlaylistService _playlistService = PlaylistService();
   // This service is correctly separated and handles the song data.
-
+  bool _isCountGridView = false;
   late Future<int> _downloadCountFuture;
   late Future<List<Playlist>> _playlistsFuture;
   late Future<List<AudioModel>> _favoritesFuture;
@@ -199,6 +200,45 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
     }
   }
 
+  // New method for the "Create New Playlist" bottom sheet
+  void _showCreateNewPlaylistBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Create New Playlist',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Build a playlist',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              // This is a placeholder for the rest of your UI
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  // TODO: Implement the logic for creating a new playlist
+                  _showSnackBar('Create new playlist tapped.');
+                },
+                child: const Text('Create'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -211,6 +251,11 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
             onPressed: () {
               // Handle search functionality
             },
+          ),
+          const SizedBox(width: 8),
+          GestureDetector(
+            child: const Icon(Icons.add_circle_outline_rounded),
+            onTap: _showCreateNewPlaylistBottomSheet,
           ),
           const SizedBox(width: 8),
         ],
@@ -241,37 +286,121 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
   }
 
   Widget _buildCountsSection() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        FutureBuilder<List<Playlist>>(
-          future: _playlistsFuture,
-          builder: (context, snapshot) {
-            final count = snapshot.data?.length ?? 0;
-            return _buildCountCard(
-                'audio.playlists'.tr(), Icons.playlist_play_rounded, count, () {
-              // TODO: Navigate to Playlists list screen
-            }, 'playlists');
-          },
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _isCountGridView = !_isCountGridView;
+                  });
+                },
+                child: Icon(
+                  _isCountGridView ? Icons.view_agenda : Icons.grid_view,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
         ),
-        FutureBuilder<List<AudioModel>>(
-          future: _favoritesFuture,
-          builder: (context, snapshot) {
-            final count = snapshot.data?.length ?? 0;
-            return _buildCountCard(
-                'audio.favorites'.tr(), Icons.favorite_rounded, count, () {
-              // TODO: Navigate to Favorites list screen
-            }, 'favorites');
-          },
-        ),
-        FutureBuilder<int>(
-          future: _downloadCountFuture,
-          builder: (context, snapshot) {
-            final count = snapshot.data ?? 0;
-            return _buildCountCard('audio.downloads'.tr(),
-                Icons.download_for_offline_rounded, count, () {
-              // TODO: Navigate to Downloads list screen
-            }, 'downloads');
+        const SizedBox(height: 16),
+        FutureBuilder(
+          future: Future.wait(
+              [_playlistsFuture, _favoritesFuture, _downloadCountFuture]),
+          builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
+            final playlistCount = (snapshot.data?[0] as List?)?.length ?? 0;
+            final favoritesCount = (snapshot.data?[1] as List?)?.length ?? 0;
+            final downloadsCount = (snapshot.data?[2] as int?) ?? 0;
+
+            final List<Map<String, dynamic>> countData = [
+              {
+                'title': 'audio.playlists'.tr(),
+                'icon': Icons.playlist_play_rounded,
+                'count': playlistCount,
+                'subtitle': 'playlists',
+                'onTap': () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PlaylistManagerPage(
+                        // songsToAdd: songs,
+                        playlistService: PlaylistService(),
+                        onPlaylistsUpdated: () {
+                          // Handle the updated playlists
+                        },
+                        albumCoverUrl: ' ',
+                      ),
+                    ),
+                  );
+                }
+              },
+              {
+                'title': 'audio.favorites'.tr(),
+                'icon': Icons.favorite_rounded,
+                'count': favoritesCount,
+                'subtitle': 'favorites',
+                'onTap': () {
+                  // Navigate to favorites screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => FavouritesPage(),
+                    ),
+                  );
+                }
+              },
+              {
+                'title': 'audio.downloads'.tr(),
+                'icon': Icons.download_for_offline_rounded,
+                'count': downloadsCount,
+                'subtitle': 'downloads',
+                'onTap': () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DownloadedFilesScreen(),
+                    ),
+                  );
+                }
+              },
+            ];
+
+            return _isCountGridView
+                ? GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: countData.length,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      childAspectRatio: 1.5, // Adjust as needed
+                    ),
+                    itemBuilder: (context, index) {
+                      final item = countData[index];
+                      return _buildCountCard(item['title'], item['icon'],
+                          item['count'], item['onTap'], item['subtitle']);
+                    },
+                  )
+                : ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: countData.length,
+                    itemBuilder: (context, index) {
+                      final item = countData[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10.0),
+                        child: _buildCountListTile(item['title'], item['icon'],
+                            item['count'], item['onTap']),
+                      );
+                    },
+                  );
           },
         ),
       ],
@@ -280,41 +409,66 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
 
   Widget _buildCountCard(String title, IconData icon, int count,
       VoidCallback onTap, String subtitle) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Card(
-          color: Theme.of(context).colorScheme.surfaceVariant,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          elevation: 0,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Icon(icon,
-                    size: 28, color: Theme.of(context).colorScheme.primary),
-                const SizedBox(height: 8),
-                Text(
-                  title,
-                  // style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  //       fontWeight: FontWeight.bold,
-                  //       color: Theme.of(context).colorScheme.onSurface,
-                  //     ),
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
+        // color: Theme.of(context).colorScheme.surfaceVariant,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: Theme.of(context).colorScheme.outline)),
+        elevation: 0,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon,
+                  size: 28, color: Theme.of(context).colorScheme.primary),
+              const SizedBox(height: 8),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  count.toString() + ' ' + subtitle,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                count.toString() + ' ' + subtitle,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+              ),
+            ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildCountListTile(
+      String title, IconData icon, int count, VoidCallback onTap) {
+    return ListTile(
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: Theme.of(context).colorScheme.outline)),
+      leading:
+          Icon(icon, size: 28, color: Theme.of(context).colorScheme.primary),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
+      ),
+      subtitle: Text(
+        '${count.toString()} items',
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+      ),
+      onTap: onTap,
     );
   }
 
@@ -338,9 +492,10 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 4.0),
               child: Text(
                 'audio.recentlyPlayedTitle'.tr(),
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: Theme.of(context)
+                    .textTheme
+                    .titleLarge
+                    ?.copyWith(fontWeight: FontWeight.bold, fontSize: 18),
               ),
             ),
             const SizedBox(height: 16),

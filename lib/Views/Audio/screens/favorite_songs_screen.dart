@@ -221,14 +221,19 @@ class _FavouritesPageState extends State<FavouritesPage> {
                             return ListTile(
                               leading: ClipRRect(
                                 borderRadius: BorderRadius.circular(8.0),
-                                child: Image.network(
-                                  song.albumCoverUrl!,
-                                  width: 50,
-                                  height: 50,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(Icons.music_note, size: 50),
-                                ),
+                                child: song.albumCoverUrl != null &&
+                                        song.albumCoverUrl!.isNotEmpty
+                                    ? Image.network(
+                                        song.albumCoverUrl!,
+                                        width: 50,
+                                        height: 50,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                const Icon(Icons.music_note,
+                                                    size: 50),
+                                      )
+                                    : const Icon(Icons.music_note, size: 50),
                               ),
                               title: Text(song.title),
                               subtitle: Text(
