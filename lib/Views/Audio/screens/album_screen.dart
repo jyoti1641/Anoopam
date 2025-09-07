@@ -3,10 +3,12 @@ import 'package:anoopam_mission/Views/Audio/models/album.dart';
 import 'package:anoopam_mission/Views/Audio/models/category_item.dart';
 import 'package:anoopam_mission/Views/Audio/models/playlist.dart';
 import 'package:anoopam_mission/Views/Audio/screens/category_detail_screen.dart';
+import 'package:anoopam_mission/Views/Audio/screens/my_library_screen.dart';
 import 'package:anoopam_mission/Views/Audio/screens/playlist_detail_screen.dart';
 import 'package:anoopam_mission/Views/Audio/screens/playlist_manager.dart';
 import 'package:anoopam_mission/Views/Audio/services/audio_service_new.dart';
 import 'package:anoopam_mission/Views/Audio/services/playlist_service.dart';
+import 'package:anoopam_mission/Views/Audio/widgets/recently_played_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 
@@ -106,6 +108,20 @@ class _AlbumScreenState extends State<AlbumScreen> {
                 });
               },
             ),
+            IconButton(
+              icon: Icon(
+                Icons.line_weight_sharp,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MyLibraryScreen(),
+                  ),
+                );
+              },
+            ),
             const SizedBox(width: 10),
           ],
         ),
@@ -167,6 +183,9 @@ class _AlbumScreenState extends State<AlbumScreen> {
                 // Featured Audio Section
                 _buildAlbumSection('audio.featuredAudio'.tr(), featuredAudio),
                 const SizedBox(height: 24),
+                // Recently Played section here
+                const RecentlyPlayedWidget(),
+                const SizedBox(height: 24),
                 // Categories Section
                 _buildCategorySection(categories),
               ],
@@ -208,13 +227,14 @@ class _AlbumScreenState extends State<AlbumScreen> {
             itemBuilder: (context, index) {
               final album = albums[index];
               return GestureDetector(
-                onTap: () {
-                  Navigator.push(
+                onTap: () async {
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => AlbumDetailScreen(album: album),
                     ),
                   );
+                  setState(() {});
                 },
                 child: Card(
                   color: Theme.of(context).colorScheme.surface,

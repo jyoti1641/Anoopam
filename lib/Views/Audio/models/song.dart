@@ -1,7 +1,7 @@
 // lib/Views/Audio/models/song.dart
 
 class AudioModel {
-  final int? id;
+  final int id;
   final String title;
   final String audioUrl;
   final String? audioDuration;
@@ -10,7 +10,7 @@ class AudioModel {
   final String? albumCoverUrl; // New field to store the album art
 
   AudioModel({
-    this.id,
+    required this.id,
     required this.title,
     required this.audioUrl,
     this.audioDuration,
@@ -22,7 +22,7 @@ class AudioModel {
   factory AudioModel.fromDetailsJson(
       Map<String, dynamic> json, int? albumId, String? albumCoverUrl) {
     return AudioModel(
-      id: json['id'] as int?,
+      id: json['media_id'] as int,
       title: json['audio_name'] as String,
       audioUrl: json['audio_file'] as String,
       audioDuration: json['duration'] as String?,
@@ -34,7 +34,7 @@ class AudioModel {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      'media_id': id,
       'audio_name': title,
       'audio_file': audioUrl,
       'duration': audioDuration,
@@ -46,7 +46,7 @@ class AudioModel {
 
   factory AudioModel.fromStoredJson(Map<String, dynamic> json) {
     return AudioModel(
-      id: json['id'] as int?,
+      id: json['media_id'] as int,
       title: json['audio_name'] as String,
       audioUrl: json['audio_file'] as String,
       audioDuration: json['duration'] as String?,

@@ -1,14 +1,22 @@
 // lib/Views/Audio/services/playlist_service.dart
 
 import 'dart:convert';
+import 'dart:io';
+import 'package:anoopam_mission/Views/Audio/models/recently_played_model.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:anoopam_mission/Views/Audio/models/playlist.dart';
 import 'package:anoopam_mission/Views/Audio/models/song.dart';
+import 'package:anoopam_mission/Views/Audio/models/album.dart';
 import 'package:http/http.dart' as http;
 
 class PlaylistService {
   static const _playlistsKey = 'user_playlists';
   static const _favoritesKey = 'user_favorites';
+  static const _key = 'recently_played_albums';
+  static const String _appDirectoryName = 'Anoopam Mission Audio';
+  static const _maxItems =
+      10; // Maximum number of recently played albums to store
 
   Future<List<Playlist>> loadPlaylists() async {
     final prefs = await SharedPreferences.getInstance();
@@ -112,10 +120,78 @@ class PlaylistService {
     await savePlaylists(playlists);
   }
 
+  Future<int> getDownloadedSongsCount() async {
+    try {
+      final Directory? publicDirectory = await getExternalStorageDirectory();
+      if (publicDirectory == null) {
+        return 0;
+      }
+      final Directory appDownloadsDirectory =
+          Directory('${publicDirectory.path}/$_appDirectoryName');
+      if (!await appDownloadsDirectory.exists()) {
+        return 0;
+      }
+      final List<FileSystemEntity> files = appDownloadsDirectory.listSync();
+      // Filter for files and exclude directories
+      return files.where((file) => file is File).length;
+    } catch (e) {
+      print('Error getting downloaded songs count: $e');
+      return 0;
+    }
+  }
+
   Future<void> deletePlaylist(String playlistName) async {
     List<Playlist> playlists = await loadPlaylists();
     playlists.removeWhere((playlist) => playlist.name == playlistName);
     await savePlaylists(playlists);
+  }
+
+  Future<void> saveSong(AudioModel song, String albumCoverUrl) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> recentlyPlayed = prefs.getStringList(_key) ?? [];
+
+    // Create a lightweight model instance from the full AudioModel and the provided URL.
+    final newSong = RecentlyPlayedSongModel(
+      id: song.id,
+      title: song.title,
+      artist: song.artist,
+      audioDuration: song.audioDuration,
+      albumCoverUrl: albumCoverUrl,
+    );
+
+    final newSongJson = jsonEncode(newSong.toJson());
+
+    // Remove the song if it already exists to place it at the top
+    recentlyPlayed.removeWhere((itemJson) {
+      final item = jsonDecode(itemJson);
+      return item['id'] == song.id;
+    });
+
+    // Add the most recent song to the start of the list
+    recentlyPlayed.insert(0, newSongJson);
+
+    // Trim the list to the maximum number of items
+    if (recentlyPlayed.length > _maxItems) {
+      recentlyPlayed = recentlyPlayed.sublist(0, _maxItems);
+    }
+
+    await prefs.setStringList(_key, recentlyPlayed);
+  }
+
+  Future<List<RecentlyPlayedSongModel>> getRecentlyPlayed() async {
+    final prefs = await SharedPreferences.getInstance();
+    final List<String> recentlyPlayed = prefs.getStringList(_key) ?? [];
+
+    final List<RecentlyPlayedSongModel> songs = [];
+    for (var itemJson in recentlyPlayed) {
+      try {
+        final item = jsonDecode(itemJson);
+        songs.add(RecentlyPlayedSongModel.fromJson(item));
+      } catch (e) {
+        print('Error decoding recently played song: $e');
+      }
+    }
+    return songs;
   }
 
   Future<List<int>> _loadFavoriteIds() async {
@@ -158,11 +234,16 @@ class PlaylistService {
   }
 
   Future<void> toggleFavoriteSong(AudioModel song) async {
+    if (song.id == null) {
+      print('Error: Cannot toggle favorite for a song with null ID.');
+      return;
+    }
+
     List<int> favoriteIds = await _loadFavoriteIds();
     if (favoriteIds.contains(song.id)) {
       favoriteIds.remove(song.id);
     } else {
-      favoriteIds.add(song.id!);
+      favoriteIds.add(song.id!); // Ensure song.id is non-null
     }
     await _saveFavoriteIds(favoriteIds);
   }

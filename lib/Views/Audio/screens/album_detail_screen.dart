@@ -340,6 +340,8 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                 showAlbumArt: true,
                 playlistService: PlaylistService(),
                 onSongTap: (int tappedIndex) {
+                  PlaylistService()
+                      .saveSong(songs[tappedIndex], albumDetails.coverImage);
                   Navigator.push(
                     context,
                     MaterialPageRoute(
