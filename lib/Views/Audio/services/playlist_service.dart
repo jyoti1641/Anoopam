@@ -157,6 +157,7 @@ class PlaylistService {
       artist: song.artist,
       audioDuration: song.audioDuration,
       albumCoverUrl: albumCoverUrl,
+      audioUrl: song.audioUrl,
     );
 
     final newSongJson = jsonEncode(newSong.toJson());

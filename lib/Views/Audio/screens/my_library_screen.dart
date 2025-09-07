@@ -1,10 +1,17 @@
 // lib/Views/Audio/screens/my_library_screen.dart
 
+import 'dart:io';
+
 import 'package:anoopam_mission/Views/Audio/models/recently_played_model.dart';
+import 'package:anoopam_mission/Views/Audio/screens/playlist_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:anoopam_mission/Views/Audio/models/playlist.dart';
 import 'package:anoopam_mission/Views/Audio/models/song.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:anoopam_mission/Views/Audio/screens/playlist_detail_screen.dart';
 import 'package:anoopam_mission/Views/Audio/services/playlist_service.dart';
 
@@ -39,6 +46,157 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
   void initState() {
     super.initState();
     _fetchData();
+  }
+
+  void _showSongOptionsBottomSheet(RecentlyPlayedSongModel song) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        // Create a temporary AudioModel from the stored data
+        final tempAudioModel = AudioModel(
+          id: song.id!,
+          title: song.title,
+          audioUrl: song.audioUrl, // Audio URL is now available
+          artist: song.artist,
+          audioDuration: song.audioDuration,
+          albumCoverUrl: song.albumCoverUrl,
+        );
+
+        return FutureBuilder<bool>(
+          future: _playlistService.isSongFavorite(tempAudioModel),
+          builder: (context, snapshot) {
+            bool isFavorite = snapshot.data ?? false;
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          song.title,
+                          style: Theme.of(context).textTheme.titleMedium,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                Wrap(
+                  children: <Widget>[
+                    ListTile(
+                      leading: const Icon(Icons.download),
+                      title: const Text('Download'),
+                      onTap: () async {
+                        Navigator.pop(context);
+                        _downloadSong(tempAudioModel);
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.playlist_add),
+                      title: const Text('Add to Playlist'),
+                      onTap: () async {
+                        Navigator.pop(context);
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PlaylistManagerPage(
+                              songsToAdd: [tempAudioModel],
+                              playlistService: _playlistService,
+                              onPlaylistsUpdated: _fetchData,
+                              albumCoverUrl: song.albumCoverUrl,
+                            ),
+                          ),
+                        );
+                        _fetchData();
+                      },
+                    ),
+                    ListTile(
+                      leading: Icon(
+                        isFavorite ? Icons.favorite : Icons.favorite_border,
+                        color: isFavorite ? Colors.red : null,
+                      ),
+                      title: Text(isFavorite ? 'Unlike' : 'Like'),
+                      onTap: () async {
+                        Navigator.pop(context);
+                        _toggleFavorite(tempAudioModel);
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.share),
+                      title: const Text('Share'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Share.share('Check out this song: ${song.title}');
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showSnackBar(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(message)));
+    }
+  }
+
+  // Download functionality
+  Future<void> _downloadSong(AudioModel song) async {
+    var status = await Permission.storage.request();
+    if (status.isDenied) {
+      _showSnackBar('Storage permission is required to download files.');
+      return;
+    }
+    _showSnackBar('Downloading ${song.title}...');
+    try {
+      final Directory? publicDirectory = await getExternalStorageDirectory();
+      if (publicDirectory == null) {
+        _showSnackBar('Could not find a valid downloads directory.');
+        return;
+      }
+      final Directory appDownloadsDirectory =
+          Directory('${publicDirectory.path}/Anoopam Mission Audio');
+      if (!await appDownloadsDirectory.exists()) {
+        await appDownloadsDirectory.create(recursive: true);
+      }
+      final fileName =
+          '${song.title.replaceAll(RegExp(r'[^\w\s.-]'), '_')}.mp3';
+      final filePath = '${appDownloadsDirectory.path}/$fileName';
+      final response = await http.get(Uri.parse(song.audioUrl));
+      if (response.statusCode == 200) {
+        final file = File(filePath);
+        await file.writeAsBytes(response.bodyBytes);
+        _showSnackBar(
+            '"${song.title}" downloaded to: ${appDownloadsDirectory.path}');
+        _fetchData(); // Refresh download count
+      } else {
+        _showSnackBar('Failed to download "${song.title}".');
+      }
+    } catch (e) {
+      _showSnackBar('Error downloading "${song.title}": $e');
+    }
+  }
+
+  // Favorite functionality
+  Future<void> _toggleFavorite(AudioModel song) async {
+    try {
+      await _playlistService.toggleFavoriteSong(song);
+      _showSnackBar('Favorite status updated for ${song.title}');
+      _fetchData(); // Refresh favorites count
+    } catch (e) {
+      _showSnackBar('Failed to update favorite status: $e');
+    }
   }
 
   @override
@@ -93,7 +251,7 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
             return _buildCountCard(
                 'audio.playlists'.tr(), Icons.playlist_play_rounded, count, () {
               // TODO: Navigate to Playlists list screen
-            });
+            }, 'playlists');
           },
         ),
         FutureBuilder<List<AudioModel>>(
@@ -103,7 +261,7 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
             return _buildCountCard(
                 'audio.favorites'.tr(), Icons.favorite_rounded, count, () {
               // TODO: Navigate to Favorites list screen
-            });
+            }, 'favorites');
           },
         ),
         FutureBuilder<int>(
@@ -113,15 +271,15 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
             return _buildCountCard('audio.downloads'.tr(),
                 Icons.download_for_offline_rounded, count, () {
               // TODO: Navigate to Downloads list screen
-            });
+            }, 'downloads');
           },
         ),
       ],
     );
   }
 
-  Widget _buildCountCard(
-      String title, IconData icon, int count, VoidCallback onTap) {
+  Widget _buildCountCard(String title, IconData icon, int count,
+      VoidCallback onTap, String subtitle) {
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -133,20 +291,21 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 20.0),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Icon(icon,
                     size: 28, color: Theme.of(context).colorScheme.primary),
                 const SizedBox(height: 8),
                 Text(
-                  count.toString(),
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
+                  title,
+                  // style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  //       fontWeight: FontWeight.bold,
+                  //       color: Theme.of(context).colorScheme.onSurface,
+                  //     ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  title,
+                  count.toString() + ' ' + subtitle,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
@@ -187,11 +346,14 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
             const SizedBox(height: 16),
             ListView.builder(
               shrinkWrap: true,
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
               physics: const NeverScrollableScrollPhysics(),
               itemCount: songs.length,
               itemBuilder: (context, index) {
                 final song = songs[index];
                 return ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 2.0, vertical: 2.0),
                   leading: ClipRRect(
                     borderRadius: BorderRadius.circular(8.0),
                     child: Image.network(
@@ -228,7 +390,12 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
                           : const SizedBox.shrink(),
                     ],
                   ),
-                  trailing: Icon(Icons.more_vert_outlined),
+                  trailing: GestureDetector(
+                    onTap: () {
+                      _showSongOptionsBottomSheet(song);
+                    },
+                    child: Icon(Icons.more_vert_outlined),
+                  ),
                   onTap: () {
                     // This is where you would handle playing the song.
                     // You would need to navigate to the AudioPlayerScreen with the song details.

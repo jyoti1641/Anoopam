@@ -6,6 +6,7 @@ class RecentlyPlayedSongModel {
   final String? artist;
   final String? audioDuration;
   final String? albumCoverUrl;
+  final String audioUrl; // Now required for actions
 
   RecentlyPlayedSongModel({
     this.id,
@@ -13,6 +14,7 @@ class RecentlyPlayedSongModel {
     this.artist,
     this.audioDuration,
     this.albumCoverUrl,
+    required this.audioUrl,
   });
 
   factory RecentlyPlayedSongModel.fromJson(Map<String, dynamic> json) {
@@ -22,6 +24,7 @@ class RecentlyPlayedSongModel {
       artist: json['artist'] as String?,
       audioDuration: json['audioDuration'] as String?,
       albumCoverUrl: json['albumCoverUrl'] as String?,
+      audioUrl: json['audioUrl'] as String,
     );
   }
 
@@ -32,6 +35,7 @@ class RecentlyPlayedSongModel {
       'artist': artist,
       'audioDuration': audioDuration,
       'albumCoverUrl': albumCoverUrl,
+      'audioUrl': audioUrl,
     };
   }
 }
