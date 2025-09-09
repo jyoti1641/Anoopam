@@ -22,6 +22,7 @@ class PlaylistSongList extends StatefulWidget {
   final Playlist playlist;
   final VoidCallback? onFavoritesUpdated;
   final Function(int)? onSongTap;
+  final bool isEditMode; // Added isEditMode parameter
 
   const PlaylistSongList({
     super.key,
@@ -30,6 +31,7 @@ class PlaylistSongList extends StatefulWidget {
     required this.playlistService,
     this.onFavoritesUpdated,
     this.onSongTap,
+    this.isEditMode = false, // Default to false
   });
 
   @override
@@ -39,7 +41,6 @@ class PlaylistSongList extends StatefulWidget {
 class _PlaylistSongListState extends State<PlaylistSongList> {
   final AlbumServiceNew _audioService = AlbumServiceNew.instance;
   String? _currentPlayingSongUrl;
-  bool _isAlbumLoading = false;
   _PlayerProcessingState _playerProcessingState = _PlayerProcessingState.idle;
   bool _isPlaying = false;
   List<bool> _isLoadingByIndex = [];
@@ -101,8 +102,6 @@ class _PlaylistSongListState extends State<PlaylistSongList> {
         return _PlayerProcessingState.ready;
       case ProcessingState.completed:
         return _PlayerProcessingState.completed;
-      default:
-        return _PlayerProcessingState.idle;
     }
   }
 
@@ -204,33 +203,16 @@ class _PlaylistSongListState extends State<PlaylistSongList> {
   }
 
   Future<void> _viewAlbum(AudioModel song) async {
-    setState(() {
-      _isAlbumLoading = true;
-    });
     try {
       final album = await ApiService().fetchAlbumDetails(song.albumId!);
-      // setState(() {
-      //   _isAlbumLoading = false;
-      // });
-      if (album != null) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => AlbumDetailScreen(album: album),
-          ),
-        );
-      } else {
-        _showSnackBar('Failed to find album for this song.');
-      }
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AlbumDetailScreen(album: album),
+        ),
+      );
     } catch (e) {
-      setState(() {
-        _isAlbumLoading = false;
-      });
       _showSnackBar('Error navigating to album: $e');
-    } finally {
-      setState(() {
-        _isAlbumLoading = false;
-      });
     }
   }
 
@@ -417,12 +399,17 @@ class _PlaylistSongListState extends State<PlaylistSongList> {
                 Text(song.audioDuration ?? ''),
               ],
             ),
-            trailing: GestureDetector(
-              onTap: () {
-                _showOptionsBottomSheet(context, song);
-              },
-              child: const Icon(Icons.more_vert),
-            ),
+            trailing: widget.isEditMode
+                ? IconButton(
+                    icon: const Icon(Icons.remove_circle_outline),
+                    onPressed: () => _removeSongFromPlaylist(song),
+                  )
+                : GestureDetector(
+                    onTap: () {
+                      _showOptionsBottomSheet(context, song);
+                    },
+                    child: const Icon(Icons.more_vert),
+                  ),
           ),
         );
       },

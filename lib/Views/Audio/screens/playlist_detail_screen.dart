@@ -15,6 +15,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:anoopam_mission/Views/Audio/screens/album_detail_screen.dart';
 import 'package:anoopam_mission/Views/Audio/models/album.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
@@ -37,11 +38,28 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
   // Use a nullable Playlist to show a loading indicator initially
   Playlist? _currentPlaylist;
   final PlaylistService _playlistService = PlaylistService();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  bool _isEditMode = false;
+  bool _isSaving = false;
+  File? _newImageFile;
+  bool _hasDescription = false;
 
   @override
   void initState() {
     super.initState();
     _loadPlaylist();
+    _nameController.text = widget.playlist.name;
+    _descriptionController.text = widget.playlist.description ?? '';
+    _hasDescription = widget.playlist.description != null &&
+        widget.playlist.description!.isNotEmpty;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
   }
 
   // This method fetches the latest playlist data from the service.
@@ -186,13 +204,96 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
     );
   }
 
+  void _toggleEditMode() {
+    setState(() {
+      _isEditMode = !_isEditMode;
+      // Reset controllers when exiting edit mode without saving
+      if (!_isEditMode) {
+        _nameController.text = _currentPlaylist!.name;
+        _descriptionController.text = _currentPlaylist!.description ?? '';
+        _newImageFile = null; // Clear the selected image
+        _hasDescription = _currentPlaylist!.description != null &&
+            _currentPlaylist!.description!.isNotEmpty;
+      }
+    });
+  }
+
   // Method to handle playlist editing. This navigates to a new screen.
   void _editPlaylist() {
-    // You would navigate to a screen specifically for editing the playlist
-    // For example, a new `EditPlaylistScreen` widget.
-    // For now, this is a placeholder.
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Edit Playlist functionality not yet implemented.')));
+    _toggleEditMode();
+  }
+
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        _newImageFile = File(image.path);
+      });
+    }
+  }
+
+  void _saveChanges() async {
+    if (_nameController.text.trim().isEmpty) {
+      _showSnackBar('Playlist name cannot be empty.');
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      String? newCoverImageUrl = _currentPlaylist!.coverImageUrl;
+
+      // Check if a new image file has been selected
+      if (_newImageFile != null) {
+        // Save the new image locally and get its file path
+        final savedImagePath =
+            await _playlistService.saveImageLocally(_newImageFile!);
+        if (savedImagePath != null) {
+          newCoverImageUrl = savedImagePath;
+        }
+      }
+      final updatedPlaylist = Playlist(
+        name: _nameController.text.trim(),
+        songs: _currentPlaylist!.songs,
+        coverImageUrl: newCoverImageUrl,
+        description: _descriptionController.text.isEmpty
+            ? null
+            : _descriptionController.text.trim(),
+      );
+
+      // Call the updated service method with the old name and the new image file.
+      await _playlistService.updatePlaylist(
+        oldName: widget.playlist.name,
+        newPlaylist: updatedPlaylist,
+        newImageFile: _newImageFile,
+      );
+
+      // After a successful save, update the state and reload the data.
+      if (mounted) {
+        _showSnackBar('Playlist updated successfully!');
+
+        // We are no longer in edit mode and saving is complete.
+        setState(() {
+          _isEditMode = false;
+          _isSaving = false;
+          _newImageFile = null; // Clear the new image file after saving
+        });
+
+        Navigator.of(context).pop(true);
+
+        widget.onPlaylistUpdated();
+      }
+    } catch (e) {
+      if (mounted) {
+        _showSnackBar('Failed to update playlist: $e');
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
   }
 
   Future<void> _deletePlaylist(String playlistName) async {
@@ -299,42 +400,86 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
         body: Center(child: CircularProgressIndicator()),
       );
     }
+    ImageProvider<Object>? currentImageProvider;
+    if (_newImageFile != null) {
+      currentImageProvider = FileImage(_newImageFile!);
+    } else if (_currentPlaylist!.coverImageUrl != null &&
+        _currentPlaylist!.coverImageUrl!.isNotEmpty) {
+      // Check if the URL is a local file path
+      if (_currentPlaylist!.coverImageUrl!.startsWith('http') == false) {
+        currentImageProvider =
+            FileImage(File(_currentPlaylist!.coverImageUrl!));
+      } else {
+        currentImageProvider = NetworkImage(_currentPlaylist!.coverImageUrl!);
+      }
+    }
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.surface,
+        title: _isEditMode ? const Text('Edit Playlist') : null,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (_isEditMode) {
+              _toggleEditMode();
+            } else {
+              Navigator.of(context).pop();
+            }
+          },
+        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: () async {
-              final bool? confirmDelete = await showDialog<bool>(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: const Text('Delete Playlist'),
-                    content: Text(
-                        'Are you sure you want to delete "${widget.playlist.name}"?'),
-                    actions: <Widget>[
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: const Text('Cancel'),
+          if (_isEditMode)
+            Padding(
+              padding: const EdgeInsets.only(right: 10.0),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey[500],
+                    foregroundColor: Colors.white,
+                    textStyle: const TextStyle(fontSize: 14),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 5, vertical: 5)),
+                onPressed: _isSaving ? null : _saveChanges,
+                child: _isSaving
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                        'Save',
+                        style: TextStyle(color: Colors.white),
                       ),
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(true),
-                        child: const Text('Delete'),
-                      ),
-                    ],
-                  );
-                },
-              );
-              if (confirmDelete == true) {
-                await _playlistService.deletePlaylist(widget.playlist.name);
-                widget.onPlaylistUpdated();
-                Navigator.of(context).pop(true); // pop with a result
-              }
-            },
-          ),
+              ),
+            ),
+          if (!_isEditMode)
+            IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: () async {
+                final bool? confirmDelete = await showDialog<bool>(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('Delete Playlist'),
+                      content: Text(
+                          'Are you sure you want to delete "${widget.playlist.name}"?'),
+                      actions: <Widget>[
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: const Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(true),
+                          child: const Text('Delete'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+                if (confirmDelete == true) {
+                  await _playlistService.deletePlaylist(widget.playlist.name);
+                  widget.onPlaylistUpdated();
+                  Navigator.of(context).pop(true); // pop with a result
+                }
+              },
+            ),
         ],
       ),
       body: _currentPlaylist!.songs.isEmpty
@@ -358,25 +503,21 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                       height: 300,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(15),
-                        image: _currentPlaylist!.coverImageUrl != null &&
-                                _currentPlaylist!.coverImageUrl!.isNotEmpty
+                        image: currentImageProvider != null
                             ? DecorationImage(
-                                image: NetworkImage(
-                                    _currentPlaylist!.coverImageUrl!),
+                                image: currentImageProvider,
                                 fit: BoxFit.cover,
                               )
                             : null,
-                        color: _currentPlaylist!.coverImageUrl == null ||
-                                _currentPlaylist!.coverImageUrl!.isEmpty
+                        color: currentImageProvider == null
                             ? Theme.of(context).colorScheme.surfaceVariant
                             : null,
                       ),
-                      child: _currentPlaylist!.coverImageUrl == null ||
-                              _currentPlaylist!.coverImageUrl!.isEmpty
+                      child: currentImageProvider == null
                           ? Center(
                               child: Icon(
                                 Icons.audiotrack,
-                                size: 20,
+                                size: 50,
                                 color: Theme.of(context).colorScheme.onSurface,
                               ),
                             )
@@ -387,43 +528,170 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(
                         vertical: 5.0, horizontal: 17),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            _currentPlaylist!.name,
-                            style: TextStyle(
-                              fontSize: 20.0,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                    child: _isEditMode
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // const SizedBox(height: 20),
+                              Center(
+                                child: TextButton.icon(
+                                  onPressed: _pickImage,
+                                  icon: const Icon(
+                                    Icons.camera_alt,
+                                    color: Colors.indigo,
+                                  ),
+                                  label: const Text(
+                                    'Change Image',
+                                    style: TextStyle(color: Colors.indigo),
+                                  ),
+                                ),
+                              ),
+                              // SizedBox(
+                              //   height: 10,
+                              // ),
+                              Center(
+                                child: TextField(
+                                  textAlign: TextAlign.center,
+                                  controller: _nameController,
+                                  style: TextStyle(
+                                    fontSize: 20.0,
+                                    fontWeight: FontWeight.w600,
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
+                                  ),
+                                  decoration: const InputDecoration(
+                                    border: UnderlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 8),
+                                child: _hasDescription
+                                    ? TextField(
+                                        controller: _descriptionController,
+                                        decoration: const InputDecoration(
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                  vertical: 5, horizontal: 5),
+                                          hintText: 'Playlist Description',
+                                          border: UnderlineInputBorder(),
+                                        ),
+                                        // maxLines: 2,
+                                      )
+                                    : Center(
+                                        child: TextButton(
+                                          style: ButtonStyle(
+                                            shape: MaterialStateProperty.all<
+                                                OutlinedBorder>(
+                                              RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          25.0),
+                                                  side: BorderSide(
+                                                      color: Colors.indigo)),
+                                            ),
+                                            padding: MaterialStateProperty.all<
+                                                EdgeInsetsGeometry>(
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: 10),
+                                            ),
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              _hasDescription = true;
+                                            });
+                                          },
+                                          child: const Text(
+                                            'Add Description',
+                                            style:
+                                                TextStyle(color: Colors.indigo),
+                                          ),
+                                        ),
+                                      ),
+                              ),
+                            ],
+                          )
+                        : Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              _currentPlaylist!.description != null
+                                  ? Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            _currentPlaylist!.name,
+                                            style: TextStyle(
+                                              fontSize: 20.0,
+                                              fontWeight: FontWeight.w600,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurface,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          SizedBox(height: 8),
+                                          Text(
+                                            _currentPlaylist!.description!,
+                                            style: TextStyle(
+                                              fontSize: 16.0,
+                                              // fontWeight: FontWeight.w600,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurface,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  : Expanded(
+                                      child: Text(
+                                        _currentPlaylist!.name,
+                                        style: TextStyle(
+                                          fontSize: 20.0,
+                                          fontWeight: FontWeight.w600,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                              const SizedBox(width: 16),
+                              Row(
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.more_vert_outlined),
+                                    color: Colors.black,
+                                    iconSize: 30.0,
+                                    onPressed: () {
+                                      _showPlaylistMenu(context);
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.play_circle_fill),
+                                    color: Colors.indigo,
+                                    iconSize: 40.0,
+                                    onPressed: () => _playAllSongs(
+                                        context, _currentPlaylist!.songs),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Row(
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.more_vert_outlined),
-                              color: Colors.black,
-                              iconSize: 30.0,
-                              onPressed: () {
-                                _showPlaylistMenu(context);
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.play_circle_fill),
-                              color: Colors.indigo,
-                              iconSize: 40.0,
-                              onPressed: () => _playAllSongs(
-                                  context, _currentPlaylist!.songs),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                  ),
+                  SizedBox(
+                    height: 10,
                   ),
                   PlaylistSongList(
                     songs: _currentPlaylist!.songs,
@@ -441,6 +709,7 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                         ),
                       );
                     },
+                    isEditMode: _isEditMode,
                   ),
                 ],
               ),

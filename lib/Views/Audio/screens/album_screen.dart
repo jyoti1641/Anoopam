@@ -1,4 +1,6 @@
 // anoopam_mission/lib/Views/Audio/screens/album_screen.dart
+import 'dart:io';
+
 import 'package:anoopam_mission/Views/Audio/models/album.dart';
 import 'package:anoopam_mission/Views/Audio/models/category_item.dart';
 import 'package:anoopam_mission/Views/Audio/models/playlist.dart';
@@ -195,6 +197,18 @@ class _AlbumScreenState extends State<AlbumScreen> {
         ),
       ),
     );
+  }
+
+  ImageProvider? _getImageProvider(String? imageUrl) {
+    if (imageUrl != null && imageUrl.isNotEmpty) {
+      // Check if the URL is a local file path
+      if (!imageUrl.startsWith('http')) {
+        return FileImage(File(imageUrl));
+      }
+      // It's a network image
+      return NetworkImage(imageUrl);
+    }
+    return null;
   }
 
   Widget _buildAlbumSection(String title, List<AlbumModel> albums) {
@@ -674,15 +688,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
   // }
 
   Widget _buildPlaylistCard(Playlist playlist) {
-    String? displayCoverImage;
-    if (playlist.songs.isNotEmpty) {
-      // The last song in the list is considered the latest added.
-      final latestSong = playlist.songs.last;
-      displayCoverImage = latestSong.albumCoverUrl;
-    } else {
-      // If the playlist has no songs, use the playlist's default cover image, if any.
-      displayCoverImage = playlist.coverImageUrl;
-    }
+    final imageProvider = _getImageProvider(playlist.coverImageUrl);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -691,17 +697,17 @@ class _AlbumScreenState extends State<AlbumScreen> {
           height: 120,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
-            image: displayCoverImage != null && displayCoverImage.isNotEmpty
+            image: imageProvider != null
                 ? DecorationImage(
-                    image: NetworkImage(displayCoverImage),
+                    image: imageProvider,
                     fit: BoxFit.cover,
                   )
                 : null,
-            color: displayCoverImage == null || displayCoverImage.isEmpty
+            color: imageProvider == null
                 ? Theme.of(context).colorScheme.surfaceVariant
                 : null,
           ),
-          child: displayCoverImage == null || displayCoverImage.isEmpty
+          child: imageProvider == null
               ? Center(
                   child: Icon(
                     Icons.audiotrack,

@@ -31,11 +31,13 @@ import 'package:anoopam_mission/Views/Audio/models/song.dart';
 class Playlist {
   String name;
   String? coverImageUrl;
+  String? description; // Added description field
   List<AudioModel> songs;
 
   Playlist({
     required this.name,
     this.coverImageUrl,
+    this.description, // Initialize description
     required this.songs,
   });
 
@@ -43,6 +45,7 @@ class Playlist {
     return {
       'name': name,
       'coverImageUrl': coverImageUrl,
+      'description': description, // Include description in JSON
       'songs': songs.map((song) => song.toJson()).toList(),
     };
   }
@@ -51,6 +54,7 @@ class Playlist {
     return Playlist(
       name: json['name'] as String,
       coverImageUrl: json['coverImageUrl'] as String?,
+      description: json['description'] as String?, // Parse description
       songs: (json['songs'] as List<dynamic>)
           .map(
               (item) => AudioModel.fromStoredJson(item as Map<String, dynamic>))

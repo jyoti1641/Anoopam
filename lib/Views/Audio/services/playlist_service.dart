@@ -10,6 +10,8 @@ import 'package:anoopam_mission/Views/Audio/models/playlist.dart';
 import 'package:anoopam_mission/Views/Audio/models/song.dart';
 import 'package:anoopam_mission/Views/Audio/models/album.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as path;
+import 'package:uuid/uuid.dart';
 
 class PlaylistService {
   static const _playlistsKey = 'user_playlists';
@@ -349,5 +351,66 @@ class PlaylistService {
             .toList() ??
         [];
     return favoritesData.any((fav) => fav['id'] == song.id);
+  }
+
+  // A helper method to save the image to local storage and get a file path.
+  // In a real app, this would be an API call to upload the image and return a URL.
+  Future<String?> saveImageLocally(File imageFile) async {
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final String fileName = '${const Uuid().v4()}_playlist_cover.png';
+      final File newImage =
+          await imageFile.copy(path.join(appDir.path, fileName));
+      return newImage.path;
+    } catch (e) {
+      print('Error saving image locally: $e');
+      return null;
+    }
+  }
+
+  Future<void> updatePlaylist({
+    required String oldName,
+    required Playlist newPlaylist,
+    File? newImageFile,
+  }) async {
+    List<Playlist> playlists = await loadPlaylists();
+    int indexToUpdate = -1;
+
+    // Find the playlist by its old name
+    for (int i = 0; i < playlists.length; i++) {
+      if (playlists[i].name == oldName) {
+        indexToUpdate = i;
+        break;
+      }
+    }
+
+    if (indexToUpdate != -1) {
+      // If a new image file is provided, save it and get the local path.
+      // In a real app, this is where you'd upload to a server.
+      String? updatedImageUrl = newPlaylist.coverImageUrl;
+      if (newImageFile != null) {
+        final newImagePath = await saveImageLocally(newImageFile);
+        if (newImagePath != null) {
+          updatedImageUrl = newImagePath;
+          // You might also want to delete the old image file if it's local.
+          // if (playlists[indexToUpdate].coverImageUrl != null &&
+          //     playlists[indexToUpdate].coverImageUrl!.startsWith(appDir.path)) {
+          //   File(playlists[indexToUpdate].coverImageUrl!).delete();
+          // }
+        }
+      }
+
+      final updatedFinalPlaylist = Playlist(
+        name: newPlaylist.name,
+        description: newPlaylist.description,
+        coverImageUrl: updatedImageUrl,
+        songs: newPlaylist.songs,
+      );
+
+      playlists[indexToUpdate] = updatedFinalPlaylist;
+      await savePlaylists(playlists);
+    } else {
+      throw Exception('Playlist not found');
+    }
   }
 }

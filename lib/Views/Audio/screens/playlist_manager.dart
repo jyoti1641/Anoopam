@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:anoopam_mission/Views/Audio/screens/create_new_playlist_screen.dart';
 import 'package:anoopam_mission/Views/Audio/screens/playlist_detail_screen.dart';
 import 'package:flutter/material.dart';
@@ -44,19 +46,19 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
     });
     final allPlaylists = await widget.playlistService.loadPlaylists();
 
-    // Iterate through all playlists and update the cover image.
-    for (var playlist in allPlaylists) {
-      if (playlist.songs.isNotEmpty) {
-        // If the playlist has songs, use the last song's album cover.
-        final lastSong = playlist.songs.last;
-        playlist.coverImageUrl = lastSong.albumCoverUrl;
-      } else {
-        // If the playlist is empty, use a default image URL.
-        // This prevents the null check operator error.
-        playlist.coverImageUrl =
-            'https://example.com/default_placeholder.png'; // Replace with your actual default image URL
-      }
-    }
+    // // Iterate through all playlists and update the cover image.
+    // for (var playlist in allPlaylists) {
+    //   if (playlist.songs.isNotEmpty) {
+    //     // If the playlist has songs, use the last song's album cover.
+    //     final lastSong = playlist.songs.last;
+    //     playlist.coverImageUrl = lastSong.albumCoverUrl;
+    //   } else {
+    //     // If the playlist is empty, use a default image URL.
+    //     // This prevents the null check operator error.
+    //     playlist.coverImageUrl =
+    //         'https://example.com/default_placeholder.png'; // Replace with your actual default image URL
+    //   }
+    // }
 
     setState(() {
       _userPlaylists = allPlaylists.toList();
@@ -169,6 +171,20 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
             'playlist.errorDeleting'.tr(namedArgs: {'error': e.toString()}));
       }
     }
+  }
+
+  ImageProvider _getImageProvider(String? imageUrl) {
+    if (imageUrl != null && imageUrl.isNotEmpty) {
+      // Check if the URL is a local file path
+      if (!imageUrl.startsWith('http')) {
+        return FileImage(File(imageUrl));
+      }
+      // It's a network image
+      return NetworkImage(imageUrl);
+    }
+    // Return a placeholder image provider if no image is available
+    return const AssetImage(
+        'assets/images/default_playlist.png'); // Replace with a local asset path
   }
 
   @override
@@ -314,8 +330,9 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
                                       leading: ClipRRect(
                                         borderRadius:
                                             BorderRadius.circular(8.0),
-                                        child: Image.network(
-                                          playlist.coverImageUrl!,
+                                        child: Image(
+                                          image: _getImageProvider(
+                                              playlist.coverImageUrl),
                                           width: 60,
                                           height: 60,
                                           fit: BoxFit.cover,
@@ -392,8 +409,8 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(8.0),
-            child: Image.network(
-              playlist.coverImageUrl!,
+            child: Image(
+              image: _getImageProvider(playlist.coverImageUrl),
               width: double.infinity,
               height: 110, // Adjust height as needed
               fit: BoxFit.cover,
