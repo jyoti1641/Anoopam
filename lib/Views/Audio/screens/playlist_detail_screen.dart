@@ -245,76 +245,26 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
 
   Future<void> _downloadPlaylist() async {
     if (_currentPlaylist == null || _currentPlaylist!.songs.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No songs to download.')),
-      );
+      _showSnackBar('No songs to download.');
       return;
     }
-
-    // Request permission to access storage
-    // You only need `storage` permission on Android < 13
-    // On Android 13+, this should automatically request `media` permissions
     var status = await Permission.storage.request();
     if (status.isDenied) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Storage permission is required to download files.')),
-      );
+      _showSnackBar('Storage permission is required.');
       return;
     }
+    _showSnackBar('Downloading playlist...');
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Downloading playlist...')),
-    );
-
-    final List<AudioModel> songsToDownload = _currentPlaylist!.songs;
-
-    // Get a public directory where files can be saved
-    final Directory? publicDirectory = await getExternalStorageDirectory();
-
-    if (publicDirectory == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Could not find a valid downloads directory.')),
-      );
-      return;
-    }
-
-    // Create a new folder specifically for your app's downloads
-    final Directory appDownloadsDirectory =
-        Directory('${publicDirectory.path}/Anoopam Mission Audio');
-    if (!await appDownloadsDirectory.exists()) {
-      await appDownloadsDirectory.create(recursive: true);
-    }
-
-    for (var song in songsToDownload) {
+    for (var song in _currentPlaylist!.songs) {
       try {
-        final fileName =
-            '${song.title.replaceAll(RegExp(r'[^\w\s.-]'), '_')}.mp3';
-        final filePath = '${appDownloadsDirectory.path}/$fileName';
-
-        final response = await http.get(Uri.parse(song.audioUrl));
-
-        if (response.statusCode == 200) {
-          final file = File(filePath);
-          await file.writeAsBytes(response.bodyBytes);
-          // Give the user the exact path to check for the file
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text(
-                    '"${song.title}" downloaded to: ${appDownloadsDirectory.path}')),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to download "${song.title}".')),
-          );
-        }
+        await _playlistService.downloadAndSaveSong(song);
+        _showSnackBar('"${song.title}" downloaded.');
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error downloading "${song.title}": $e')),
-        );
+        _showSnackBar('Error downloading "${song.title}": $e');
       }
     }
+    _showSnackBar('All songs finished downloading.');
+    // You should also reload your downloads screen after this
   }
 
   void _sharePlaylist(List<AudioModel> songs) {

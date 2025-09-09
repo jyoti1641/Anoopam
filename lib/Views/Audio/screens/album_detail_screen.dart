@@ -83,6 +83,38 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
     }
   }
 
+  void _downloadAlbum(List<AudioModel> songs) async {
+    if (songs.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No songs to download.')),
+      );
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Downloading album...')),
+    );
+
+    final PlaylistService playlistService = PlaylistService();
+
+    for (var song in songs) {
+      try {
+        await playlistService.downloadAndSaveSong(song);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('"${song.title}" downloaded.')),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error downloading "${song.title}": $e')),
+        );
+      }
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Album download complete.')),
+    );
+  }
+
   Widget _buildAlbumBottomSheet(BuildContext context, List<AudioModel> songs) {
     return SingleChildScrollView(
       padding: EdgeInsets.only(
@@ -130,15 +162,15 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4.0),
-                      Text(
-                        widget.album.artist ?? 'Unknown Artist',
-                        style: TextStyle(
-                          fontSize: 16.0,
-                          color: Colors.grey[700],
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      // Text(
+                      //   widget.album.artist ?? 'Unknown Artist',
+                      //   style: TextStyle(
+                      //     fontSize: 16.0,
+                      //     color: Colors.grey[700],
+                      //   ),
+                      //   maxLines: 1,
+                      //   overflow: TextOverflow.ellipsis,
+                      // ),
                     ],
                   ),
                 ),
@@ -146,6 +178,14 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
             ),
           ),
           const Divider(),
+          ListTile(
+            leading: const Icon(Icons.download),
+            title: const Text('Download Album'),
+            onTap: () {
+              Navigator.pop(context);
+              _downloadAlbum(songs);
+            },
+          ),
           ListTile(
             leading: const Icon(Icons.playlist_add),
             title: const Text('Add to a Playlist'),
@@ -237,7 +277,6 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
           }
 
           AlbumModel albumDetails = snapshot.data!;
-          print('album detail screen: ${albumDetails.songs}');
           List<AudioModel> songs = albumDetails.songs ?? [];
 
           if (_isSearching && _searchQuery.isNotEmpty) {

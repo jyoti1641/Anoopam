@@ -234,41 +234,15 @@ class _PlaylistSongListState extends State<PlaylistSongList> {
     }
   }
 
-  Future<void> _downloadSong(AudioModel song) async {
-    // Request permission to access storage
+  void _downloadSong(AudioModel song) async {
     var status = await Permission.storage.request();
     if (status.isDenied) {
-      _showSnackBar('Storage permission is required to download files.');
+      _showSnackBar('Storage permission is required.');
       return;
     }
-
-    _showSnackBar('Downloading ${song.title}...');
-
     try {
-      final Directory? publicDirectory = await getExternalStorageDirectory();
-      if (publicDirectory == null) {
-        _showSnackBar('Could not find a valid downloads directory.');
-        return;
-      }
-      final Directory appDownloadsDirectory =
-          Directory('${publicDirectory.path}/Anoopam Mission Audio');
-      if (!await appDownloadsDirectory.exists()) {
-        await appDownloadsDirectory.create(recursive: true);
-      }
-
-      final fileName =
-          '${song.title.replaceAll(RegExp(r'[^\w\s.-]'), '_')}.mp3';
-      final filePath = '${appDownloadsDirectory.path}/$fileName';
-      final response = await http.get(Uri.parse(song.audioUrl));
-
-      if (response.statusCode == 200) {
-        final file = File(filePath);
-        await file.writeAsBytes(response.bodyBytes);
-        _showSnackBar(
-            '"${song.title}" downloaded to: ${appDownloadsDirectory.path}');
-      } else {
-        _showSnackBar('Failed to download "${song.title}".');
-      }
+      await PlaylistService().downloadAndSaveSong(song);
+      _showSnackBar('"${song.title}" downloaded.');
     } catch (e) {
       _showSnackBar('Error downloading "${song.title}": $e');
     }
