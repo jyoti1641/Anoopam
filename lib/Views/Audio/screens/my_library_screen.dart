@@ -3,6 +3,7 @@
 import 'dart:io';
 
 import 'package:anoopam_mission/Views/Audio/models/recently_played_model.dart';
+import 'package:anoopam_mission/Views/Audio/screens/create_new_playlist_screen.dart';
 import 'package:anoopam_mission/Views/Audio/screens/downloaded_file_screen.dart';
 import 'package:anoopam_mission/Views/Audio/screens/favorite_songs_screen.dart';
 import 'package:anoopam_mission/Views/Audio/screens/playlist_manager.dart';
@@ -205,34 +206,62 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
-        return Container(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Create New Playlist',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
+        return GestureDetector(
+          onTap: () async {
+            Navigator.pop(context); // Close the bottom sheet
+
+            // Navigate to the CreateNewPlaylistScreen
+            String? newPlaylistName = await Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const CreateNewPlaylistScreen(),
+              ),
+            );
+
+            // Handle the returned playlist name
+            if (newPlaylistName != null && newPlaylistName.isNotEmpty) {
+              if ((await _playlistsFuture)
+                  .any((p) => p.name == newPlaylistName)) {
+                _showSnackBar('Playlist "$newPlaylistName" already exists.');
+                return;
+              }
+              try {
+                await _playlistService.createPlaylist(newPlaylistName);
+                _showSnackBar(
+                    'Playlist "$newPlaylistName" created successfully.');
+                _fetchData(); // Refresh the playlist data
+              } catch (e) {
+                _showSnackBar('Error creating playlist: $e');
+              }
+            }
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(15.0),
+            child: Row(
+              children: [
+                Icon(Icons.music_note,
+                    size: 30, color: Theme.of(context).colorScheme.primary),
+                SizedBox(width: 12),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Create New Playlist',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleLarge
+                          ?.copyWith(fontWeight: FontWeight.w500, fontSize: 18),
                     ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Build a playlist',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              // This is a placeholder for the rest of your UI
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  // TODO: Implement the logic for creating a new playlist
-                  _showSnackBar('Create new playlist tapped.');
-                },
-                child: const Text('Create'),
-              ),
-            ],
+                    const SizedBox(height: 8),
+                    Text(
+                      'Build a playlist',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    // This is a placeholder for the rest of your UI
+                  ],
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -260,27 +289,39 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: _fetchData,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildCountsSection(),
-                const SizedBox(height: 24),
-                // Correctly calls the method that builds the songs list
-                _buildRecentlyPlayedSection(),
-                const SizedBox(height: 24),
-                // _buildPlaylistsSection(),
-                // const SizedBox(height: 24),
-                // _buildFavoritesSection(),
-              ],
+      body: FutureBuilder(
+        future: Future.wait([
+          _downloadCountFuture,
+          _playlistsFuture,
+          _favoritesFuture,
+          _recentlyPlayedFuture
+        ]),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+          return RefreshIndicator(
+            onRefresh: _fetchData,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildCountsSection(),
+                    const SizedBox(height: 24),
+                    _buildRecentlyPlayedSection(),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }

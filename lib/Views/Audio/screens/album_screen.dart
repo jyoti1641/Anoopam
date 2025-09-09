@@ -3,6 +3,7 @@ import 'package:anoopam_mission/Views/Audio/models/album.dart';
 import 'package:anoopam_mission/Views/Audio/models/category_item.dart';
 import 'package:anoopam_mission/Views/Audio/models/playlist.dart';
 import 'package:anoopam_mission/Views/Audio/screens/category_detail_screen.dart';
+import 'package:anoopam_mission/Views/Audio/screens/create_new_playlist_screen.dart';
 import 'package:anoopam_mission/Views/Audio/screens/my_library_screen.dart';
 import 'package:anoopam_mission/Views/Audio/screens/playlist_detail_screen.dart';
 import 'package:anoopam_mission/Views/Audio/screens/playlist_manager.dart';
@@ -423,6 +424,14 @@ class _AlbumScreenState extends State<AlbumScreen> {
     );
   }
 
+  void _showSnackBar(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(message)));
+    }
+  }
+
   // The UI for when there are no playlists
   Widget _buildCreatePlaylist() {
     return Column(
@@ -443,7 +452,31 @@ class _AlbumScreenState extends State<AlbumScreen> {
         Padding(
           padding: const EdgeInsets.only(right: 8.0, left: 20, bottom: 30),
           child: GestureDetector(
-            onTap: _showCreatePlaylistDialog,
+            onTap: () async {
+              // Navigate to the CreateNewPlaylistScreen
+              String? newPlaylistName = await Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const CreateNewPlaylistScreen(),
+                ),
+              );
+
+              // Handle the returned playlist name
+              if (newPlaylistName != null && newPlaylistName.isNotEmpty) {
+                if ((await _playlistsFuture)
+                    .any((p) => p.name == newPlaylistName)) {
+                  _showSnackBar('Playlist "$newPlaylistName" already exists.');
+                  return;
+                }
+                try {
+                  await _playlistService.createPlaylist(newPlaylistName);
+                  _showSnackBar(
+                      'Playlist "$newPlaylistName" created successfully.');
+                  _fetchData(); // Refresh the playlist data
+                } catch (e) {
+                  _showSnackBar('Error creating playlist: $e');
+                }
+              }
+            },
             child: Container(
               width: 120,
               height: 120,
@@ -548,7 +581,35 @@ class _AlbumScreenState extends State<AlbumScreen> {
                   padding:
                       const EdgeInsets.only(right: 8.0, left: 8, bottom: 30),
                   child: GestureDetector(
-                    onTap: _showCreatePlaylistDialog,
+                    onTap: () async {
+                      // Navigate to the CreateNewPlaylistScreen
+                      String? newPlaylistName =
+                          await Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const CreateNewPlaylistScreen(),
+                        ),
+                      );
+
+                      // Handle the returned playlist name
+                      if (newPlaylistName != null &&
+                          newPlaylistName.isNotEmpty) {
+                        if ((await _playlistsFuture)
+                            .any((p) => p.name == newPlaylistName)) {
+                          _showSnackBar(
+                              'Playlist "$newPlaylistName" already exists.');
+                          return;
+                        }
+                        try {
+                          await _playlistService
+                              .createPlaylist(newPlaylistName);
+                          _showSnackBar(
+                              'Playlist "$newPlaylistName" created successfully.');
+                          _fetchData(); // Refresh the playlist data
+                        } catch (e) {
+                          _showSnackBar('Error creating playlist: $e');
+                        }
+                      }
+                    },
                     child: Container(
                       width: 120,
                       height: 120,
@@ -574,43 +635,43 @@ class _AlbumScreenState extends State<AlbumScreen> {
     );
   }
 
-  // The dialog to get the playlist name
-  void _showCreatePlaylistDialog() {
-    final TextEditingController _playlistNameController =
-        TextEditingController();
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('audio.givePlaylistName'.tr()),
-          content: TextField(
-            controller: _playlistNameController,
-            decoration: InputDecoration(hintText: 'My Playlist'),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('audio.cancel'.tr()),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (_playlistNameController.text.isNotEmpty) {
-                  await _playlistService
-                      .createPlaylist(_playlistNameController.text);
-                  setState(() {
-                    _playlistsFuture =
-                        _playlistService.loadPlaylists(); // Refresh
-                  });
-                  Navigator.of(context).pop();
-                }
-              },
-              child: Text('audio.create'.tr()),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // // The dialog to get the playlist name
+  // void _showCreatePlaylistDialog() {
+  //   final TextEditingController _playlistNameController =
+  //       TextEditingController();
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: Text('audio.givePlaylistName'.tr()),
+  //         content: TextField(
+  //           controller: _playlistNameController,
+  //           decoration: InputDecoration(hintText: 'My Playlist'),
+  //         ),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () => Navigator.of(context).pop(),
+  //             child: Text('audio.cancel'.tr()),
+  //           ),
+  //           ElevatedButton(
+  //             onPressed: () async {
+  //               if (_playlistNameController.text.isNotEmpty) {
+  //                 await _playlistService
+  //                     .createPlaylist(_playlistNameController.text);
+  //                 setState(() {
+  //                   _playlistsFuture =
+  //                       _playlistService.loadPlaylists(); // Refresh
+  //                 });
+  //                 Navigator.of(context).pop();
+  //               }
+  //             },
+  //             child: Text('audio.create'.tr()),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   Widget _buildPlaylistCard(Playlist playlist) {
     String? displayCoverImage;

@@ -71,6 +71,50 @@ class _FavouritesPageState extends State<FavouritesPage> {
     );
   }
 
+  Future<void> _downloadAllFavorites() async {
+    if (_favoriteSongs.isEmpty) {
+      _showSnackBar('No favorite songs to download.');
+      return;
+    }
+
+    var status = await Permission.storage.request();
+    if (status.isDenied) {
+      _showSnackBar('Storage permission is required to download files.');
+      return;
+    }
+    _showSnackBar('Downloading all favorite songs...');
+
+    final Directory? publicDirectory = await getExternalStorageDirectory();
+    if (publicDirectory == null) {
+      _showSnackBar('Could not find a valid downloads directory.');
+      return;
+    }
+    final Directory appDownloadsDirectory =
+        Directory('${publicDirectory.path}/Anoopam Mission Audio');
+    if (!await appDownloadsDirectory.exists()) {
+      await appDownloadsDirectory.create(recursive: true);
+    }
+
+    for (var song in _favoriteSongs) {
+      try {
+        final fileName =
+            '${song.title.replaceAll(RegExp(r'[^\w\s.-]'), '_')}.mp3';
+        final filePath = '${appDownloadsDirectory.path}/$fileName';
+        final response = await http.get(Uri.parse(song.audioUrl));
+        if (response.statusCode == 200) {
+          final file = File(filePath);
+          await file.writeAsBytes(response.bodyBytes);
+          _showSnackBar('"${song.title}" downloaded.');
+        } else {
+          _showSnackBar('Failed to download "${song.title}".');
+        }
+      } catch (e) {
+        _showSnackBar('Error downloading "${song.title}": $e');
+      }
+    }
+    _showSnackBar('All favorite songs finished downloading.');
+  }
+
   Future<void> _downloadSong(AudioModel song) async {
     var status = await Permission.storage.request();
     if (status.isDenied) {
@@ -199,9 +243,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                 children: [
                                   IconButton(
                                     icon: const Icon(Icons.download),
-                                    onPressed: () {
-                                      // Logic to download all favorite songs
-                                    },
+                                    onPressed: _downloadAllFavorites,
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.play_circle_fill,
@@ -238,12 +280,27 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                       )
                                     : const Icon(Icons.music_note, size: 50),
                               ),
-                              title: Text(song.title),
-                              subtitle: Text(
-                                  '${song.artist ?? 'Unknown Artist'} | ${song.audioDuration}'),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.more_vert),
-                                onPressed: () =>
+                              title: Text(
+                                song.title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              subtitle: Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(song.artist ?? 'Unknown Artist',
+                                        style: TextStyle(fontSize: 12)),
+                                  ),
+                                  const Text(' | '),
+                                  song.audioDuration != null
+                                      ? Text(song.audioDuration!,
+                                          style: TextStyle(fontSize: 12))
+                                      : const SizedBox.shrink(),
+                                ],
+                              ),
+                              trailing: GestureDetector(
+                                child: const Icon(Icons.more_vert),
+                                onTap: () =>
                                     _showOptionsBottomSheet(context, song),
                               ),
                             );
