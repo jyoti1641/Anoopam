@@ -48,7 +48,6 @@ class _SongListState extends State<SongList> {
   _PlayerProcessingState _playerProcessingState = _PlayerProcessingState.idle;
   bool _isPlaying = false;
 
-  // Removed _isFavoriteByIndex and related logic
   List<bool> _isLoadingByIndex = [];
 
   @override
@@ -132,8 +131,6 @@ class _SongListState extends State<SongList> {
     super.dispose();
   }
 
-  // The old _initializeFavoriteStatus() is removed.
-
   @override
   void didUpdateWidget(covariant SongList oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -170,20 +167,19 @@ class _SongListState extends State<SongList> {
     widget.onSongTap?.call(tappedIndex);
   }
 
-  // Updated _toggleFavorite method
-  Future<void> _toggleFavorite(AudioModel song) async {
+  // Updated _toggleFavorite method to accept album cover URL
+  Future<void> _toggleFavorite(AudioModel song, String albumCoverUrl) async {
     try {
-      await widget.playlistService.toggleFavoriteSong(song);
+      // Pass the albumCoverUrl to the PlaylistService method
+      await widget.playlistService.toggleFavoriteSong(song, albumCoverUrl);
       _showSnackBar('Favorite status updated for ${song.title}');
       widget.onFavoritesUpdated?.call();
     } catch (e) {
       _showSnackBar('Failed to update favorite status: $e');
     }
-    // No need to manually update state here, the FutureBuilder handles it
   }
 
   Future<void> _downloadSong(AudioModel song) async {
-    // Request permission to access storage
     var status = await Permission.storage.request();
     if (status.isDenied) {
       _showSnackBar('Storage permission is required to download files.');
@@ -306,8 +302,8 @@ class _SongListState extends State<SongList> {
                       title: Text(isFavorite ? 'Unlike' : 'Like'),
                       onTap: () async {
                         Navigator.pop(context);
-                        await _toggleFavorite(song);
-                        // No need for setState() here, FutureBuilder handles it
+                        // The album cover is available via widget.albumCoverUrl
+                        await _toggleFavorite(song, widget.albumCoverUrl);
                       },
                     ),
                     ListTile(

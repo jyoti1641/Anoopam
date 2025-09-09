@@ -154,9 +154,9 @@ class _PlaylistSongListState extends State<PlaylistSongList> {
     widget.onSongTap?.call(tappedIndex);
   }
 
-  Future<void> _toggleFavorite(AudioModel song) async {
+  Future<void> _toggleFavorite(AudioModel song, String albumCoverUrl) async {
     try {
-      await widget.playlistService.toggleFavoriteSong(song);
+      await widget.playlistService.toggleFavoriteSong(song, albumCoverUrl);
       _showSnackBar('Favorite status updated for ${song.title}');
       widget.onFavoritesUpdated?.call();
     } catch (e) {
@@ -375,7 +375,7 @@ class _PlaylistSongListState extends State<PlaylistSongList> {
                   title: Text(isFavorite ? 'Unlike' : 'Like'),
                   onTap: () async {
                     Navigator.pop(context);
-                    await _toggleFavorite(song);
+                    await _toggleFavorite(song, song.albumCoverUrl!);
                   },
                 ),
                 ListTile(

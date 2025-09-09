@@ -1,4 +1,6 @@
 // lib/Views/Audio/screens/favourites_page.dart
+
+import 'dart:io';
 import 'package:anoopam_mission/Views/Audio/models/song.dart';
 import 'package:anoopam_mission/Views/Audio/screens/audio_player_screen.dart';
 import 'package:anoopam_mission/Views/Audio/services/album_service_new.dart';
@@ -9,7 +11,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
-import 'dart:io';
 import 'package:share_plus/share_plus.dart';
 
 class FavouritesPage extends StatefulWidget {
@@ -44,7 +45,9 @@ class _FavouritesPageState extends State<FavouritesPage> {
   // Method to remove a song from favorites
   Future<void> _removeFromFavorites(AudioModel song) async {
     try {
-      await _playlistService.toggleFavoriteSong(song);
+      // The toggleFavoriteSong method in PlaylistService is now updated to handle the album cover URL.
+      // We pass null for the albumCoverUrl here because we are removing the song.
+      await _playlistService.toggleFavoriteSong(song, '');
       _showSnackBar('Removed "${song.title}" from favorites.');
       await _loadFavoriteSongs(); // Reload the list to update the UI
     } catch (e) {

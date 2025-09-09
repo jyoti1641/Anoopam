@@ -192,7 +192,7 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
   // Favorite functionality
   Future<void> _toggleFavorite(AudioModel song) async {
     try {
-      await _playlistService.toggleFavoriteSong(song);
+      await _playlistService.toggleFavoriteSong(song, song.albumCoverUrl ?? '');
       _showSnackBar('Favorite status updated for ${song.title}');
       _fetchData(); // Refresh favorites count
     } catch (e) {

@@ -195,25 +195,57 @@ class PlaylistService {
     return songs;
   }
 
-  Future<List<int>> _loadFavoriteIds() async {
+  // This is the key method to update.
+  Future<void> toggleFavoriteSong(AudioModel song, String albumCoverUrl) async {
+    if (song.id == null) {
+      print('Error: Cannot toggle favorite for a song with null ID.');
+      return;
+    }
+
+    // Load both ID and album cover URL
     final prefs = await SharedPreferences.getInstance();
-    final List<String>? favorites = prefs.getStringList(_favoritesKey);
-    return favorites?.map(int.parse).toList() ?? [];
+    final List<String>? favoritesJson = prefs.getStringList(_favoritesKey);
+    List<Map<String, dynamic>> favoritesData = favoritesJson
+            ?.map((e) => json.decode(e) as Map<String, dynamic>)
+            .toList() ??
+        [];
+
+    final isFavorite = favoritesData.any((fav) => fav['id'] == song.id);
+
+    if (isFavorite) {
+      favoritesData.removeWhere((fav) => fav['id'] == song.id);
+    } else {
+      // Save the song ID and album cover URL together
+      favoritesData.add({
+        'id': song.id,
+        'albumCoverUrl': albumCoverUrl,
+      });
+    }
+
+    final List<String> updatedFavoritesJson =
+        favoritesData.map((e) => json.encode(e)).toList();
+    await prefs.setStringList(_favoritesKey, updatedFavoritesJson);
   }
 
-  Future<void> _saveFavoriteIds(List<int> favoriteIds) async {
-    final prefs = await SharedPreferences.getInstance();
-    final List<String> idStrings =
-        favoriteIds.map((id) => id.toString()).toList();
-    await prefs.setStringList(_favoritesKey, idStrings);
-  }
-
-  // CRITICAL METHOD: The type conversion happens here.
+  // Updated loadFavorites to merge API data with local album cover
   Future<List<AudioModel>> loadFavorites() async {
-    List<int> favoriteIds = await _loadFavoriteIds();
-    if (favoriteIds.isEmpty) {
+    final prefs = await SharedPreferences.getInstance();
+    final List<String>? favoritesJson = prefs.getStringList(_favoritesKey);
+    List<Map<String, dynamic>> favoritesData = favoritesJson
+            ?.map((e) => json.decode(e) as Map<String, dynamic>)
+            .toList() ??
+        [];
+
+    if (favoritesData.isEmpty) {
       return [];
     }
+
+    final favoriteIds = favoritesData.map((e) => e['id'] as int).toList();
+    final albumCovers = {
+      for (var item in favoritesData)
+        item['id'] as int: item['albumCoverUrl'] as String?
+    };
+
     try {
       final String idsString = favoriteIds.join(',');
       final response = await http.get(Uri.parse(
@@ -221,10 +253,18 @@ class PlaylistService {
       if (response.statusCode == 200) {
         final List<dynamic> jsonResponse = json.decode(response.body);
 
-        // This is the line that performs the type conversion.
-        return jsonResponse
-            .map((json) => AudioModel.fromApiJson(json))
-            .toList();
+        return jsonResponse.map((json) {
+          final song = AudioModel.fromApiJson(json);
+          // Merge album cover from local storage into the API response
+          return AudioModel(
+            id: song.id,
+            title: song.title,
+            audioUrl: song.audioUrl,
+            artist: song.artist,
+            audioDuration: song.audioDuration,
+            albumCoverUrl: albumCovers[song.id] ?? song.albumCoverUrl,
+          );
+        }).toList();
       } else {
         return Future.error(
             'Failed to load favorite songs from API. Status: ${response.statusCode}');
@@ -234,23 +274,13 @@ class PlaylistService {
     }
   }
 
-  Future<void> toggleFavoriteSong(AudioModel song) async {
-    if (song.id == null) {
-      print('Error: Cannot toggle favorite for a song with null ID.');
-      return;
-    }
-
-    List<int> favoriteIds = await _loadFavoriteIds();
-    if (favoriteIds.contains(song.id)) {
-      favoriteIds.remove(song.id);
-    } else {
-      favoriteIds.add(song.id!); // Ensure song.id is non-null
-    }
-    await _saveFavoriteIds(favoriteIds);
-  }
-
   Future<bool> isSongFavorite(AudioModel song) async {
-    List<int> favoriteIds = await _loadFavoriteIds();
-    return favoriteIds.contains(song.id);
+    final prefs = await SharedPreferences.getInstance();
+    final List<String>? favoritesJson = prefs.getStringList(_favoritesKey);
+    List<Map<String, dynamic>> favoritesData = favoritesJson
+            ?.map((e) => json.decode(e) as Map<String, dynamic>)
+            .toList() ??
+        [];
+    return favoritesData.any((fav) => fav['id'] == song.id);
   }
 }
