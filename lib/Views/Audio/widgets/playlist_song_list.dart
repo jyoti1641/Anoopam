@@ -3,6 +3,7 @@
 import 'package:anoopam_mission/Views/Audio/screens/album_detail_screen.dart';
 import 'package:anoopam_mission/Views/Audio/services/album_service_new.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:anoopam_mission/Views/Audio/models/song.dart';
 import 'package:anoopam_mission/Views/Audio/models/playlist.dart';
@@ -247,7 +248,7 @@ class _PlaylistSongListState extends State<PlaylistSongList> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
+                  padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
                   child: Row(
                     children: [
                       ClipRRect(
@@ -292,7 +293,10 @@ class _PlaylistSongListState extends State<PlaylistSongList> {
                 ),
                 const Divider(height: 1),
                 ListTile(
-                  leading: const Icon(Icons.download),
+                  leading: SvgPicture.asset(
+                    'assets/icons/download_blue.svg',
+                    height: 18,
+                  ),
                   title: const Text('Download'),
                   onTap: () {
                     Navigator.pop(context);
@@ -300,7 +304,10 @@ class _PlaylistSongListState extends State<PlaylistSongList> {
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.playlist_add),
+                  leading: SvgPicture.asset(
+                    'assets/icons/circular_plus.svg',
+                    height: 18,
+                  ),
                   title: const Text('Add to Other Playlist'),
                   onTap: () {
                     Navigator.pop(context);
@@ -308,7 +315,10 @@ class _PlaylistSongListState extends State<PlaylistSongList> {
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.remove_circle_outline),
+                  leading: SvgPicture.asset(
+                    'assets/icons/remove.svg',
+                    height: 18,
+                  ),
                   title: const Text('Remove from this Playlist'),
                   onTap: () {
                     Navigator.pop(context);
@@ -316,7 +326,10 @@ class _PlaylistSongListState extends State<PlaylistSongList> {
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.album),
+                  leading: SvgPicture.asset(
+                    'assets/icons/view_album.svg',
+                    height: 18,
+                  ),
                   title: const Text('View Album'),
                   onTap: () {
                     Navigator.pop(context);
@@ -324,10 +337,15 @@ class _PlaylistSongListState extends State<PlaylistSongList> {
                   },
                 ),
                 ListTile(
-                  leading: Icon(
-                    isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: isFavorite ? Colors.red : null,
-                  ),
+                  leading: isFavorite
+                      ? Icon(
+                          Icons.favorite,
+                          color: Colors.red,
+                        )
+                      : SvgPicture.asset(
+                          'assets/icons/like.svg',
+                          height: 18,
+                        ),
                   title: Text(isFavorite ? 'Unlike' : 'Like'),
                   onTap: () async {
                     Navigator.pop(context);
@@ -335,7 +353,10 @@ class _PlaylistSongListState extends State<PlaylistSongList> {
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.share),
+                  leading: SvgPicture.asset(
+                    'assets/icons/share_blue.svg',
+                    height: 18,
+                  ),
                   title: const Text('Share'),
                   onTap: () {
                     Navigator.pop(context);
@@ -408,7 +429,10 @@ class _PlaylistSongListState extends State<PlaylistSongList> {
                     onTap: () {
                       _showOptionsBottomSheet(context, song);
                     },
-                    child: const Icon(Icons.more_vert),
+                    child: const Icon(
+                      Icons.more_vert,
+                      color: Color(0xff034DA2),
+                    ),
                   ),
           ),
         );

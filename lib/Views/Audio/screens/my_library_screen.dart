@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:anoopam_mission/Views/Audio/models/playlist.dart';
 import 'package:anoopam_mission/Views/Audio/models/song.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -96,9 +97,13 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
                       },
                     ),
                   ),
-                  title: Text(song.title,
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold)),
+                  title: Text(
+                    song.title,
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   subtitle: Text(song.artist ?? 'Unknown Artist',
                       style: const TextStyle(fontSize: 14)),
                 ),
@@ -106,7 +111,10 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
                 Wrap(
                   children: <Widget>[
                     ListTile(
-                      leading: const Icon(Icons.download),
+                      leading: SvgPicture.asset(
+                        'assets/icons/download_blue.svg',
+                        height: 18,
+                      ),
                       title: const Text('Download'),
                       onTap: () async {
                         Navigator.pop(context);
@@ -114,7 +122,10 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
                       },
                     ),
                     ListTile(
-                      leading: const Icon(Icons.playlist_add),
+                      leading: SvgPicture.asset(
+                        'assets/icons/circular_plus.svg',
+                        height: 18,
+                      ),
                       title: const Text('Add to Playlist'),
                       onTap: () async {
                         Navigator.pop(context);
@@ -133,18 +144,27 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
                       },
                     ),
                     ListTile(
-                      leading: Icon(
-                        isFavorite ? Icons.favorite : Icons.favorite_border,
-                        color: isFavorite ? Colors.red : null,
-                      ),
+                      leading: isFavorite
+                          ? Icon(
+                              Icons.favorite,
+                              color: Colors.red,
+                            )
+                          : SvgPicture.asset(
+                              'assets/icons/like.svg',
+                              height: 18,
+                            ),
                       title: Text(isFavorite ? 'Unlike' : 'Like'),
                       onTap: () async {
                         Navigator.pop(context);
                         _toggleFavorite(tempAudioModel);
                       },
                     ),
+                    //  const SizedBox(width: 10),
                     ListTile(
-                      leading: const Icon(Icons.share),
+                      leading: SvgPicture.asset(
+                        'assets/icons/search_blue.svg',
+                        height: 18,
+                      ),
                       title: const Text('Share'),
                       onTap: () {
                         Navigator.pop(context);
@@ -232,9 +252,12 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
             padding: const EdgeInsets.all(15.0),
             child: Row(
               children: [
-                Icon(Icons.music_note,
-                    size: 30, color: Theme.of(context).colorScheme.primary),
-                SizedBox(width: 12),
+                SizedBox(width: 15),
+                SvgPicture.asset(
+                  'assets/icons/music.svg',
+                  height: 18,
+                ),
+                SizedBox(width: 25),
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -268,19 +291,30 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
       appBar: AppBar(
         title: Text('audio.myLibraryTitle'.tr()),
         backgroundColor: Theme.of(context).colorScheme.surface,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // Handle search functionality
-            },
+        leading: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SvgPicture.asset(
+            'assets/icons/back.svg',
+            height: 16,
           ),
-          const SizedBox(width: 8),
+        ),
+        actions: [
           GestureDetector(
-            child: const Icon(Icons.add_circle_outline_rounded),
+            child: SvgPicture.asset(
+              'assets/icons/search_blue.svg',
+              height: 18,
+            ),
+            onTap: () {},
+          ),
+          const SizedBox(width: 10),
+          GestureDetector(
+            child: SvgPicture.asset(
+              'assets/icons/circular_plus.svg',
+              height: 18,
+            ),
             onTap: _showCreateNewPlaylistBottomSheet,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 20),
         ],
       ),
       body: FutureBuilder(
@@ -335,9 +369,11 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
                     _isCountGridView = !_isCountGridView;
                   });
                 },
-                child: Icon(
-                  _isCountGridView ? Icons.view_agenda : Icons.grid_view,
-                  color: Theme.of(context).colorScheme.onSurface,
+                child: SvgPicture.asset(
+                  _isCountGridView
+                      ? 'assets/icons/grid_icon.svg'
+                      : 'assets/icons/list_icon.svg',
+                  height: 18,
                 ),
               ),
             ],
@@ -355,7 +391,10 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
             final List<Map<String, dynamic>> countData = [
               {
                 'title': 'audio.playlists'.tr(),
-                'icon': Icons.playlist_play_rounded,
+                'icon': SvgPicture.asset(
+                  'assets/icons/playlists.svg',
+                  height: 20,
+                ),
                 'count': playlistCount,
                 'subtitle': 'playlists',
                 'onTap': () {
@@ -376,7 +415,10 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
               },
               {
                 'title': 'audio.favorites'.tr(),
-                'icon': Icons.favorite_rounded,
+                'icon': SvgPicture.asset(
+                  'assets/icons/like.svg',
+                  height: 18,
+                ),
                 'count': favoritesCount,
                 'subtitle': 'favorites',
                 'onTap': () {
@@ -391,7 +433,10 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
               },
               {
                 'title': 'audio.downloads'.tr(),
-                'icon': Icons.download_for_offline_rounded,
+                'icon': SvgPicture.asset(
+                  'assets/icons/download_blue.svg',
+                  height: 18,
+                ),
                 'count': downloadsCount,
                 'subtitle': 'downloads',
                 'onTap': () {
@@ -484,13 +529,12 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
   }
 
   Widget _buildCountListTile(
-      String title, IconData icon, int count, VoidCallback onTap) {
+      String title, Widget icon, int count, VoidCallback onTap) {
     return ListTile(
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
           side: BorderSide(color: Theme.of(context).colorScheme.outline)),
-      leading:
-          Icon(icon, size: 28, color: Theme.of(context).colorScheme.primary),
+      leading: icon,
       title: Text(
         title,
         style: TextStyle(

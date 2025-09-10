@@ -16,6 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 import 'package:anoopam_mission/Views/Audio/screens/album_detail_screen.dart';
+import 'package:flutter_svg/svg.dart';
 
 class AlbumScreen extends StatefulWidget {
   const AlbumScreen({super.key});
@@ -69,54 +70,33 @@ class _AlbumScreenState extends State<AlbumScreen> {
         backgroundColor: Theme.of(context).colorScheme.surface,
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.surface,
-          title: _isSearching
-              ? TextField(
-                  controller: _searchController,
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurface,
-                      fontSize: 17),
-                  decoration: InputDecoration(
-                    hintText: 'audio.searchBarHint'.tr(),
-                    hintStyle: TextStyle(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withAlpha(150)),
-                    border: InputBorder.none,
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      // _searchQuery = value;
-                    });
-                  },
-                )
-              : Text(
-                  'audio.albumTitle'.tr(),
-                  style:
-                      TextStyle(color: Theme.of(context).colorScheme.onSurface),
-                ),
-          actions: [
-            IconButton(
-              icon: Icon(
-                _isSearching ? Icons.close : Icons.search,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-              onPressed: () {
-                setState(() {
-                  if (_isSearching) {
-                    // _searchQuery = ''; // Clear search query
-                    _searchController.clear(); // Clear text field
-                  }
-                  _isSearching = !_isSearching; // Toggle search mode
-                });
-              },
+          centerTitle: true,
+          title: Text(
+            'audio.albumTitle'.tr(),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+          ),
+          leading: Padding(
+            padding: const EdgeInsets.all(18.0),
+            child: SvgPicture.asset(
+              'assets/icons/back.svg',
+              height: 1,
             ),
-            IconButton(
-              icon: Icon(
-                Icons.line_weight_sharp,
-                color: Theme.of(context).colorScheme.onSurface,
+          ),
+          actions: [
+            GestureDetector(
+              child: SvgPicture.asset(
+                'assets/icons/search_blue.svg',
+                height: 18,
               ),
-              onPressed: () {
+              onTap: () {},
+            ),
+            const SizedBox(width: 10),
+            GestureDetector(
+              child: SvgPicture.asset(
+                'assets/icons/library.svg',
+                height: 20,
+              ),
+              onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -125,7 +105,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                 );
               },
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 20),
           ],
         ),
         body: FutureBuilder<Map<String, dynamic>>(
@@ -495,14 +475,18 @@ class _AlbumScreenState extends State<AlbumScreen> {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceVariant,
+                // color: Theme.of(context).colorScheme.surfaceVariant,
                 borderRadius: BorderRadius.circular(15),
+                border: Border.all(
+                  color: Colors.grey.shade400,
+                  width: 1,
+                  style: BorderStyle.values[1],
+                ),
               ),
               child: Center(
-                child: Icon(
-                  Icons.add_circle_outline,
-                  size: 20,
-                  color: Theme.of(context).colorScheme.onSurface,
+                child: SvgPicture.asset(
+                  'assets/icons/circular_plus.svg',
+                  height: 16,
                 ),
               ),
             ),
@@ -550,7 +534,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                 child: Text(
                   'SEE ALL',
                   style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
+                    color: Colors.orange,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -628,14 +612,18 @@ class _AlbumScreenState extends State<AlbumScreen> {
                       width: 120,
                       height: 120,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surfaceVariant,
+                        // color: Theme.of(context).colorScheme.surfaceVariant,
                         borderRadius: BorderRadius.circular(15),
+                        border: Border.all(
+                          color: Colors.grey.shade400,
+                          width: 1,
+                          style: BorderStyle.values[1],
+                        ),
                       ),
                       child: Center(
-                        child: Icon(
-                          Icons.add_circle_outline,
-                          size: 20,
-                          color: Theme.of(context).colorScheme.onSurface,
+                        child: SvgPicture.asset(
+                          'assets/icons/circular_plus.svg',
+                          height: 16,
                         ),
                       ),
                     ),

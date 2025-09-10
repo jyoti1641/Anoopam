@@ -10,6 +10,7 @@ import 'package:anoopam_mission/Views/Audio/services/playlist_service.dart';
 import 'package:anoopam_mission/Views/Audio/screens/playlist_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
@@ -114,28 +115,28 @@ class _FavouritesPageState extends State<FavouritesPage> {
     );
   }
 
-  void _viewAlbum(AudioModel song) async {
-    try {
-      debugPrint(
-          'Album ID: \\${song.albumId}'); // Log the album ID for debugging
+  // void _viewAlbum(AudioModel song) async {
+  //   try {
+  //     debugPrint(
+  //         'Album ID: \\${song.albumId}'); // Log the album ID for debugging
 
-      if (song.albumId == null) {
-        _showSnackBar('No album information available for this song.');
-        return;
-      }
+  //     if (song.albumId == null) {
+  //       _showSnackBar('No album information available for this song.');
+  //       return;
+  //     }
 
-      final albumDetails = await _apiService.fetchAlbumDetails(song.albumId!);
+  //     final albumDetails = await _apiService.fetchAlbumDetails(song.albumId!);
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => AlbumDetailScreen(album: albumDetails),
-        ),
-      );
-    } catch (e) {
-      _showSnackBar('Error navigating to album: $e');
-    }
-  }
+  //     Navigator.push(
+  //       context,
+  //       MaterialPageRoute(
+  //         builder: (context) => AlbumDetailScreen(album: albumDetails),
+  //       ),
+  //     );
+  //   } catch (e) {
+  //     _showSnackBar('Error navigating to album: $e');
+  //   }
+  // }
 
   void _downloadSong(AudioModel song) async {
     var status = await Permission.storage.request();
@@ -220,7 +221,10 @@ class _FavouritesPageState extends State<FavouritesPage> {
             ),
             const Divider(height: 1),
             ListTile(
-              leading: const Icon(Icons.download),
+              leading: SvgPicture.asset(
+                'assets/icons/download_blue.svg',
+                height: 18,
+              ),
               title: const Text('Download'),
               onTap: () {
                 Navigator.pop(context);
@@ -228,7 +232,10 @@ class _FavouritesPageState extends State<FavouritesPage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.playlist_add),
+              leading: SvgPicture.asset(
+                'assets/icons/circular_plus.svg',
+                height: 18,
+              ),
               title: const Text('Add to Other Playlist'),
               onTap: () {
                 Navigator.pop(context);
@@ -236,23 +243,29 @@ class _FavouritesPageState extends State<FavouritesPage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.remove_circle_outline),
+              leading: SvgPicture.asset(
+                'assets/icons/like.svg',
+                height: 18,
+              ),
               title: const Text('Unlike'),
               onTap: () {
                 Navigator.pop(context);
                 _removeFromFavorites(song);
               },
             ),
+            // ListTile(
+            //   leading: const Icon(Icons.album),
+            //   title: const Text('View Album'),
+            //   onTap: () {
+            //     Navigator.pop(context);
+            //     _viewAlbum(song);
+            //   },
+            // ),
             ListTile(
-              leading: const Icon(Icons.album),
-              title: const Text('View Album'),
-              onTap: () {
-                Navigator.pop(context);
-                _viewAlbum(song);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.share),
+              leading: SvgPicture.asset(
+                'assets/icons/share_blue.svg',
+                height: 18,
+              ),
               title: const Text('Share'),
               onTap: () {
                 Navigator.pop(context);
@@ -271,12 +284,33 @@ class _FavouritesPageState extends State<FavouritesPage> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Favourites'),
+        centerTitle: true,
+        leading: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SvgPicture.asset(
+            'assets/icons/back.svg',
+            height: 16,
+          ),
+        ),
         backgroundColor: Theme.of(context).colorScheme.surface,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {},
+          GestureDetector(
+            child: SvgPicture.asset(
+              'assets/icons/search_blue.svg',
+              height: 18,
+            ),
+            onTap: () {},
           ),
+          const SizedBox(width: 10),
+          Padding(
+            padding: const EdgeInsets.only(right: 15.0),
+            child: GestureDetector(
+                child: SvgPicture.asset(
+                  'assets/icons/circular_plus.svg',
+                  height: 18,
+                ),
+                onTap: () {}),
+          )
         ],
       ),
       body: _isLoading
@@ -289,6 +323,9 @@ class _FavouritesPageState extends State<FavouritesPage> {
                     )
                   : ListView(
                       children: [
+                        SizedBox(
+                          height: 30,
+                        ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0),
                           child: Row(
@@ -307,12 +344,15 @@ class _FavouritesPageState extends State<FavouritesPage> {
                               Row(
                                 children: [
                                   IconButton(
-                                    icon: const Icon(Icons.download),
+                                    icon: SvgPicture.asset(
+                                      'assets/icons/download_blue.svg',
+                                      height: 18,
+                                    ),
                                     onPressed: _downloadAllFavorites,
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.play_circle_fill,
-                                        color: Colors.indigo, size: 40),
+                                        color: Color(0xff034DA2), size: 40),
                                     onPressed: () =>
                                         _playAllSongs(context, _favoriteSongs),
                                   ),

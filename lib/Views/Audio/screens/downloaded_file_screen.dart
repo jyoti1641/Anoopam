@@ -3,6 +3,7 @@
 import 'dart:io';
 import 'package:anoopam_mission/Views/Audio/services/playlist_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:anoopam_mission/Views/Audio/models/downloaded_song_model.dart';
 import 'package:anoopam_mission/Views/Audio/services/audio_service_new.dart';
@@ -134,7 +135,10 @@ class _DownloadedFilesScreenState extends State<DownloadedFilesScreen> {
           ),
           const Divider(height: 1),
           ListTile(
-            leading: const Icon(Icons.delete),
+            leading: SvgPicture.asset(
+              'assets/icons/remove.svg',
+              height: 18,
+            ),
             title: const Text('Remove Download'),
             onTap: () {
               Navigator.pop(context);
@@ -142,7 +146,10 @@ class _DownloadedFilesScreenState extends State<DownloadedFilesScreen> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.share),
+            leading: SvgPicture.asset(
+              'assets/icons/share_blue.svg',
+              height: 18,
+            ),
             title: const Text('Share'),
             onTap: () {
               Navigator.pop(context);
@@ -163,16 +170,32 @@ class _DownloadedFilesScreenState extends State<DownloadedFilesScreen> {
       appBar: AppBar(
         title: const Text('Downloads'),
         backgroundColor: Theme.of(context).colorScheme.surface,
+        centerTitle: true,
+        leading: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SvgPicture.asset(
+            'assets/icons/back.svg',
+            height: 16,
+          ),
+        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {},
+          GestureDetector(
+            child: SvgPicture.asset(
+              'assets/icons/search_blue.svg',
+              height: 18,
+            ),
+            onTap: () {},
           ),
-          const SizedBox(width: 8),
-          IconButton(
-            icon: const Icon(Icons.add_circle_outline_rounded),
-            onPressed: () {},
-          ),
+          const SizedBox(width: 10),
+          Padding(
+            padding: const EdgeInsets.only(right: 15.0),
+            child: GestureDetector(
+                child: SvgPicture.asset(
+                  'assets/icons/circular_plus.svg',
+                  height: 18,
+                ),
+                onTap: () {}),
+          )
         ],
       ),
       body: FutureBuilder<List<DownloadedSongModel>>(
@@ -200,11 +223,22 @@ class _DownloadedFilesScreenState extends State<DownloadedFilesScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('Downloaded',
-                          style: Theme.of(context).textTheme.headlineSmall),
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.w600)),
                       TextButton.icon(
                         onPressed: () => _playAllSongsLocally(downloadedSongs),
-                        icon: const Icon(Icons.play_arrow),
-                        label: const Text('PLAY ALL'),
+                        icon: const Icon(
+                          Icons.play_circle,
+                          size: 30,
+                          color: Color(0xff034DA2),
+                        ),
+                        label: const Text(
+                          'PLAY ALL',
+                          style: TextStyle(
+                              color: Color(0xff034DA2),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500),
+                        ),
                       ),
                     ],
                   ),

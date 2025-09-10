@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 class CreateNewPlaylistScreen extends StatefulWidget {
   const CreateNewPlaylistScreen({super.key});
@@ -24,21 +25,24 @@ class _CreateNewPlaylistScreenState extends State<CreateNewPlaylistScreen> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.surface,
+        centerTitle: true,
         title: Text(
           'playlist.createNew'.tr(), // "Create New Playlist"
           style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
+              color: Theme.of(context).colorScheme.onSurface, fontSize: 18),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: SvgPicture.asset(
+            'assets/icons/back.svg',
+            height: 20,
+          ),
           onPressed: () {
             Navigator.of(context).pop(); // Go back without creating
           },
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 30),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -51,7 +55,7 @@ class _CreateNewPlaylistScreenState extends State<CreateNewPlaylistScreen> {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
             TextField(
               controller: _playlistNameController,
               decoration: InputDecoration(
@@ -90,9 +94,7 @@ class _CreateNewPlaylistScreenState extends State<CreateNewPlaylistScreen> {
                           .pop(_playlistNameController.text.trim());
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context)
-                          .colorScheme
-                          .primary, // Blue background
+                      backgroundColor: Color(0xff034DA2), // Blue background
                       foregroundColor:
                           Theme.of(context).colorScheme.onPrimary, // White text
                       padding: const EdgeInsets.symmetric(vertical: 15),
@@ -100,7 +102,10 @@ class _CreateNewPlaylistScreenState extends State<CreateNewPlaylistScreen> {
                         borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    child: Text('playlist.create'.tr()), // "CREATE"
+                    child: Text(
+                      'playlist.create'.tr(),
+                      style: TextStyle(fontSize: 16),
+                    ), // "CREATE"
                   ),
                 ),
                 const SizedBox(width: 20),
@@ -110,8 +115,7 @@ class _CreateNewPlaylistScreenState extends State<CreateNewPlaylistScreen> {
                       Navigator.of(context).pop(); // Cancel and go back
                     },
                     style: OutlinedButton.styleFrom(
-                      foregroundColor:
-                          Theme.of(context).colorScheme.primary, // Blue text
+                      foregroundColor: Color(0xff034DA2), // Blue text
                       side: BorderSide(
                           color: Theme.of(context)
                               .colorScheme
@@ -121,7 +125,10 @@ class _CreateNewPlaylistScreenState extends State<CreateNewPlaylistScreen> {
                         borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    child: Text('playlist.cancel'.tr()), // "CANCEL"
+                    child: Text(
+                      'playlist.cancel'.tr(),
+                      style: TextStyle(fontSize: 16),
+                    ), // "CANCEL"
                   ),
                 ),
               ],

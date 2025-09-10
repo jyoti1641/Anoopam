@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:anoopam_mission/Views/Audio/models/song.dart';
 import 'package:anoopam_mission/Views/Audio/screens/audio_player_screen.dart';
+import 'package:anoopam_mission/Views/Audio/screens/my_library_screen.dart';
 import 'package:anoopam_mission/Views/Audio/screens/playlist_manager.dart';
 import 'package:anoopam_mission/Views/Audio/services/album_service_new.dart';
 import 'package:anoopam_mission/Views/Audio/services/playlist_service.dart';
@@ -14,6 +15,7 @@ import 'package:easy_localization/easy_localization.dart';
 // Assuming `AlbumDetailScreen` needs to be imported to handle navigation
 import 'package:anoopam_mission/Views/Audio/screens/album_detail_screen.dart';
 import 'package:anoopam_mission/Views/Audio/models/album.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -165,7 +167,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             const Divider(height: 1),
             // Download option
             ListTile(
-              leading: const Icon(Icons.download),
+              leading: SvgPicture.asset(
+                'assets/icons/download_blue.svg',
+                height: 18,
+              ),
               title: const Text('Download'),
               onTap: () async {
                 Navigator.pop(context);
@@ -174,7 +179,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             ),
             // Add to Other Playlist option
             ListTile(
-              leading: const Icon(Icons.playlist_add),
+              leading: SvgPicture.asset(
+                'assets/icons/circular_plus.svg',
+                height: 18,
+              ),
               title: const Text('Add to Other Playlist'),
               onTap: () {
                 Navigator.pop(context);
@@ -183,7 +191,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             ),
             // Edit Playlist option
             ListTile(
-              leading: const Icon(Icons.edit),
+              leading: SvgPicture.asset(
+                'assets/icons/edit.svg',
+                height: 18,
+              ),
               title: const Text('Edit Playlist'),
               onTap: () {
                 Navigator.pop(context);
@@ -193,7 +204,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             ),
             // Delete Playlist option
             ListTile(
-              leading: const Icon(Icons.delete),
+              leading: SvgPicture.asset(
+                'assets/icons/delete.svg',
+                height: 18,
+              ),
               title: const Text('Delete Playlist'),
               onTap: () async {
                 Navigator.pop(context);
@@ -202,7 +216,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
             ),
             // Share option
             ListTile(
-              leading: const Icon(Icons.share),
+              leading: SvgPicture.asset(
+                'assets/icons/share_blue.svg',
+                height: 18,
+              ),
               title: const Text('Share'),
               onTap: () {
                 Navigator.pop(context);
@@ -435,7 +452,10 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
         backgroundColor: Theme.of(context).colorScheme.surface,
         title: _isEditMode ? const Text('Edit Playlist') : null,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: SvgPicture.asset(
+            'assets/icons/back.svg',
+            height: 20,
+          ),
           onPressed: () {
             if (_isEditMode) {
               _toggleEditMode();
@@ -465,36 +485,33 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
               ),
             ),
           if (!_isEditMode)
-            IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: () async {
-                final bool? confirmDelete = await showDialog<bool>(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: const Text('Delete Playlist'),
-                      content: Text(
-                          'Are you sure you want to delete "${widget.playlist.name}"?'),
-                      actions: <Widget>[
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(false),
-                          child: const Text('Cancel'),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(true),
-                          child: const Text('Delete'),
-                        ),
-                      ],
+            Row(
+              children: [
+                GestureDetector(
+                  child: SvgPicture.asset(
+                    'assets/icons/search_blue.svg',
+                    height: 18,
+                  ),
+                  onTap: () {},
+                ),
+                const SizedBox(width: 10),
+                GestureDetector(
+                  child: SvgPicture.asset(
+                    'assets/icons/library.svg',
+                    height: 20,
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MyLibraryScreen(),
+                      ),
                     );
                   },
-                );
-                if (confirmDelete == true) {
-                  await _playlistService.deletePlaylist(widget.playlist.name);
-                  widget.onPlaylistUpdated();
-                  Navigator.of(context).pop(true); // pop with a result
-                }
-              },
-            ),
+                ),
+                const SizedBox(width: 20),
+              ],
+            )
         ],
       ),
       body: _currentPlaylist!.songs.isEmpty
@@ -687,15 +704,15 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                                 children: [
                                   IconButton(
                                     icon: const Icon(Icons.more_vert_outlined),
-                                    color: Colors.black,
-                                    iconSize: 30.0,
+                                    color: Color(0xff034DA2),
+                                    iconSize: 25.0,
                                     onPressed: () {
                                       _showPlaylistMenu(context);
                                     },
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.play_circle_fill),
-                                    color: Colors.indigo,
+                                    color: Color(0xff034DA2),
                                     iconSize: 40.0,
                                     onPressed: () => _playAllSongs(
                                         context, _currentPlaylist!.songs),

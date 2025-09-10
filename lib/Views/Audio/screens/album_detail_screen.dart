@@ -2,12 +2,14 @@
 
 import 'package:anoopam_mission/Views/Audio/models/album.dart';
 import 'package:anoopam_mission/Views/Audio/models/song.dart';
+import 'package:anoopam_mission/Views/Audio/screens/my_library_screen.dart';
 import 'package:anoopam_mission/Views/Audio/services/album_service_new.dart';
 import 'package:anoopam_mission/Views/Audio/screens/playlist_manager.dart';
 import 'package:anoopam_mission/Views/Audio/services/audio_service_new.dart';
 import 'package:anoopam_mission/Views/Audio/services/playlist_service.dart';
 import 'package:anoopam_mission/Views/Audio/widgets/song_list_new.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:anoopam_mission/Views/Audio/screens/audio_player_screen.dart';
 
@@ -170,7 +172,10 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
           ),
           const Divider(),
           ListTile(
-            leading: const Icon(Icons.download),
+            leading: SvgPicture.asset(
+              'assets/icons/download_blue.svg',
+              height: 18,
+            ),
             title: const Text('Download Album'),
             onTap: () {
               Navigator.pop(context);
@@ -178,7 +183,10 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.playlist_add),
+            leading: SvgPicture.asset(
+              'assets/icons/circular_plus.svg',
+              height: 18,
+            ),
             title: const Text('Add to a Playlist'),
             onTap: () {
               Navigator.pop(context);
@@ -186,7 +194,10 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.share),
+            leading: SvgPicture.asset(
+              'assets/icons/share_blue.svg',
+              height: 18,
+            ),
             title: const Text('Share Album'),
             onTap: () {
               Navigator.pop(context);
@@ -214,43 +225,40 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
           onPressed: () {
             Navigator.pop(context);
           },
-          child: Icon(Icons.arrow_back_rounded),
+          child: SvgPicture.asset(
+            'assets/icons/back.svg',
+            height: 16,
+          ),
         ),
-        title: _isSearching
-            ? TextField(
-                controller: _searchController,
-                style: const TextStyle(color: Colors.black, fontSize: 17),
-                decoration: InputDecoration(
-                  hintText: 'Search songs...',
-                  hintStyle: TextStyle(color: Colors.grey[600]),
-                  border: InputBorder.none,
-                ),
-                onChanged: (value) {
-                  setState(() {
-                    _searchQuery = value;
-                  });
-                },
-              )
-            : Text(
-                widget.album.title,
-                style:
-                    const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
-              ),
+        title: Text(
+          widget.album.title,
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
+        ),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: Icon(_isSearching ? Icons.close : Icons.search),
-            onPressed: () {
-              setState(() {
-                if (_isSearching) {
-                  _searchQuery = '';
-                  _searchController.clear();
-                }
-                _isSearching = !_isSearching;
-              });
-            },
+          GestureDetector(
+            child: SvgPicture.asset(
+              'assets/icons/search_blue.svg',
+              height: 18,
+            ),
+            onTap: () {},
           ),
           const SizedBox(width: 10),
+          GestureDetector(
+            child: SvgPicture.asset(
+              'assets/icons/library.svg',
+              height: 20,
+            ),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MyLibraryScreen(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(width: 20),
         ],
       ),
       body: FutureBuilder<AlbumModel>(
@@ -337,13 +345,14 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                       children: [
                         IconButton(
                           icon: const Icon(Icons.more_vert),
-                          iconSize: 28.0,
+                          color: Color(0xff034DA2),
+                          iconSize: 25.0,
                           onPressed: () =>
                               _showAlbumMenu(context, songs, albumDetails),
                         ),
                         IconButton(
                           icon: const Icon(Icons.play_circle_fill),
-                          color: Theme.of(context).primaryColor,
+                          color: Color(0xff034DA2),
                           iconSize: 40.0,
                           onPressed: () => _playAllSongs(context, songs),
                         ),

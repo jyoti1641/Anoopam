@@ -1,7 +1,9 @@
 // lib/Views/Audio/screens/audio_player_screen.dart
+import 'package:anoopam_mission/Views/Audio/screens/playlist_manager.dart';
 import 'package:anoopam_mission/Views/Audio/services/album_service_new.dart';
 import 'package:anoopam_mission/Views/Audio/services/playlist_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:just_audio/just_audio.dart'; // For AudioPlayer, ProcessingState, LoopMode, ShuffleMode
@@ -257,6 +259,22 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     );
   }
 
+  void _addSongToPlaylist(AudioModel song, String coverimage) async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PlaylistManagerPage(
+          songsToAdd: [song],
+          playlistService: _playlistService,
+          onPlaylistsUpdated: () {},
+          albumCoverUrl: coverimage,
+        ),
+      ),
+    ).then((_) {
+      // No need to call _initializeFavoriteStatus()
+    });
+  }
+
   void _toggleRepeat() async {
     // Cycle through LoopMode.off, LoopMode.all, LoopMode.one
     LoopMode newMode;
@@ -306,7 +324,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back,
-            color: Theme.of(context).colorScheme.onSurface,
+            color: Color(0xff034DA2),
           ),
           onPressed: () => Navigator.of(context).pop(),
         ),
@@ -314,7 +332,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
           IconButton(
             icon: Icon(
               Icons.more_vert,
-              color: Theme.of(context).colorScheme.onSurface,
+              color: Color(0xff034DA2),
             ),
             onPressed: () {},
           ),
@@ -377,8 +395,8 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                             Text(
                               currentSong.title,
                               style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
                                 color: Theme.of(context).colorScheme.onSurface,
                               ),
                               textAlign: TextAlign.left,
@@ -386,30 +404,60 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                               overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 5),
-                            Text(
-                              currentSong.artist ?? 'Unknown Artist',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withValues(alpha: 0.7),
-                              ),
-                              textAlign: TextAlign.left,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                            Row(
+                              children: [
+                                Text(
+                                  currentSong.artist ?? 'Unknown Artist',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.7),
+                                  ),
+                                  textAlign: TextAlign.left,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                SizedBox(
+                                  width: 5,
+                                ),
+                                Text(
+                                  currentSong.audioDuration ?? '0.00',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.7),
+                                  ),
+                                  textAlign: TextAlign.left,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ),
                       // Share button next to song info
-                      IconButton(
-                        icon: Icon(
-                          Icons.share,
-                          size: 28,
-                          color: Theme.of(context).colorScheme.onSurface,
+                      GestureDetector(
+                        child: SvgPicture.asset(
+                          'assets/icons/circular_plus.svg',
+                          height: 16,
                         ),
-                        onPressed: _shareSong,
+                        onTap: () {
+                          _addSongToPlaylist(
+                              currentSong, currentSong.albumCoverUrl!);
+                        },
+                      ),
+                      // Share button next to song info
+                      GestureDetector(
+                        child: SvgPicture.asset(
+                          'assets/icons/share_blue.svg',
+                          height: 16,
+                        ),
+                        onTap: _shareSong,
                       ),
                     ],
                   ),
@@ -419,17 +467,17 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                     children: [
                       SliderTheme(
                         data: SliderTheme.of(context).copyWith(
-                          trackHeight: 4.0,
+                          trackHeight: 2.0,
                           padding: EdgeInsets.symmetric(horizontal: 10),
                           thumbShape: const RoundSliderThumbShape(
-                              enabledThumbRadius: 8.0),
-                          overlayShape: const RoundSliderOverlayShape(
-                              overlayRadius: 16.0),
-                          activeTrackColor: Theme.of(context).primaryColor,
+                              enabledThumbRadius: 5.0),
+                          overlayShape:
+                              const RoundSliderOverlayShape(overlayRadius: 5.0),
+                          activeTrackColor: Color(0xff034DA2),
                           inactiveTrackColor: Theme.of(context)
                               .colorScheme
                               .surfaceContainerHighest,
-                          thumbColor: Theme.of(context).primaryColor,
+                          thumbColor: Color(0xff034DA2),
                           overlayColor:
                               Theme.of(context).primaryColor.withOpacity(0.2),
                         ),
@@ -471,18 +519,15 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Expanded(
-                        child: IconButton(
-                          icon: Icon(
-                            Icons.shuffle,
-                            color: _isShuffleEnabled
+                        child: GestureDetector(
+                          child: SvgPicture.asset(
+                            'assets/icons/playback.svg',
+                            height: 20,
+                            color: _loopMode != LoopMode.off
                                 ? Theme.of(context).primaryColor
-                                : Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withValues(alpha: 0.6),
+                                : Theme.of(context).colorScheme.onSurface,
                           ),
-                          iconSize: 28.0,
-                          onPressed: _toggleShuffle,
+                          onTap: _toggleRepeat,
                         ),
                       ),
                       Expanded(
@@ -491,14 +536,14 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                             Icons.skip_previous,
                             color: Theme.of(context).colorScheme.onSurface,
                           ),
-                          iconSize: 48.0,
+                          iconSize: 40.0,
                           onPressed: _skipToPrevious,
                         ),
                       ),
                       Container(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Theme.of(context).primaryColor,
+                          color: Color(0xff034DA2),
                         ),
                         child: isPlayerLoadingOrBuffering
                             ? const SizedBox(
@@ -524,28 +569,20 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                             Icons.skip_next,
                             color: Theme.of(context).colorScheme.onSurface,
                           ),
-                          iconSize: 48.0,
+                          iconSize: 40.0,
                           onPressed: _skipToNext,
                         ),
                       ),
                       Expanded(
-                        child: IconButton(
-                          icon: Icon(
-                            _loopMode == LoopMode.off
-                                ? Icons.repeat
-                                : _loopMode == LoopMode.all
-                                    ? Icons.repeat_on
-                                    : Icons
-                                        .repeat_one_on, // repeat_one_on for LoopMode.one
-                            color: _loopMode != LoopMode.off
+                        child: GestureDetector(
+                          child: SvgPicture.asset(
+                            'assets/icons/shuffle.svg',
+                            height: 20,
+                            color: _isShuffleEnabled
                                 ? Theme.of(context).primaryColor
-                                : Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withValues(alpha: 0.6),
+                                : Theme.of(context).colorScheme.onSurface,
                           ),
-                          iconSize: 28.0,
-                          onPressed: _toggleRepeat,
+                          onTap: _toggleShuffle,
                         ),
                       ),
                     ],

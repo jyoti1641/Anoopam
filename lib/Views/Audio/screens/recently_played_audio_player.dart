@@ -1,8 +1,12 @@
 // lib/Views/Audio/screens/audio_player_screen.dart
 
 import 'package:anoopam_mission/Views/Audio/models/recently_played_model.dart';
+import 'package:anoopam_mission/Views/Audio/models/song.dart';
+import 'package:anoopam_mission/Views/Audio/screens/playlist_manager.dart';
 import 'package:anoopam_mission/Views/Audio/services/album_service_new.dart';
+import 'package:anoopam_mission/Views/Audio/services/playlist_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:just_audio/just_audio.dart';
@@ -258,6 +262,23 @@ class _RecentlyPlayedAudioPlayerState extends State<RecentlyPlayedAudioPlayer> {
     return const AssetImage('assets/images/default_playlist.png');
   }
 
+// void _addSongToPlaylist(
+//       RecentlyPlayedSongModel song, String coverimage) async {
+//     Navigator.push(
+//       context,
+//       MaterialPageRoute(
+//         builder: (context) => PlaylistManagerPage(
+//           songsToAdd: [song],
+//           playlistService: PlaylistService(),
+//           onPlaylistsUpdated: () {},
+//           albumCoverUrl: coverimage,
+//         ),
+//       ),
+//     ).then((_) {
+//       // No need to call _initializeFavoriteStatus()
+//     });
+//   }
+
   @override
   Widget build(BuildContext context) {
     final currentSong =
@@ -282,7 +303,7 @@ class _RecentlyPlayedAudioPlayerState extends State<RecentlyPlayedAudioPlayer> {
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back,
-            color: Theme.of(context).colorScheme.onSurface,
+            color: Color(0xff034DA2),
           ),
           onPressed: () => Navigator.of(context).pop(),
         ),
@@ -290,7 +311,7 @@ class _RecentlyPlayedAudioPlayerState extends State<RecentlyPlayedAudioPlayer> {
           IconButton(
             icon: Icon(
               Icons.more_vert,
-              color: Theme.of(context).colorScheme.onSurface,
+              color: Color(0xff034DA2),
             ),
             onPressed: () {},
           ),
@@ -310,52 +331,39 @@ class _RecentlyPlayedAudioPlayerState extends State<RecentlyPlayedAudioPlayer> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SizedBox(
+                  SizedBox(
                     height: 15,
                   ),
+                  // Album Art
                   ClipRRect(
                     borderRadius: BorderRadius.circular(20.0),
-                    child: coverImageProvider != null
-                        ? Image(
-                            image: coverImageProvider,
-                            width: MediaQuery.of(context).size.width * 0.9,
-                            height: MediaQuery.of(context).size.width * 0.9,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                width: MediaQuery.of(context).size.width * 0.9,
-                                height: MediaQuery.of(context).size.width * 0.9,
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .surfaceContainerHighest,
-                                  borderRadius: BorderRadius.circular(15.0),
-                                ),
-                                child: Icon(Icons.music_note,
-                                    size: 100,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant),
-                              );
-                            },
-                          )
-                        : Container(
-                            width: MediaQuery.of(context).size.width * 0.9,
-                            height: MediaQuery.of(context).size.width * 0.9,
-                            decoration: BoxDecoration(
+                    child: Image.network(
+                      currentSong
+                          .albumCoverUrl!, // Using imageUrl from AudioModel
+                      width: MediaQuery.of(context).size.width * 0.9,
+                      height: MediaQuery.of(context).size.width * 0.9,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: MediaQuery.of(context).size.width * 0.9,
+                          height: MediaQuery.of(context).size.width * 0.9,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(15.0),
+                          ),
+                          child: Icon(Icons.music_note,
+                              size: 100,
                               color: Theme.of(context)
                                   .colorScheme
-                                  .surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(15.0),
-                            ),
-                            child: Icon(Icons.music_note,
-                                size: 100,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant),
-                          ),
+                                  .onSurfaceVariant),
+                        );
+                      },
+                    ),
                   ),
                   const SizedBox(height: 30),
+                  // Song Title and Artist
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -366,8 +374,8 @@ class _RecentlyPlayedAudioPlayerState extends State<RecentlyPlayedAudioPlayer> {
                             Text(
                               currentSong.title,
                               style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
                                 color: Theme.of(context).colorScheme.onSurface,
                               ),
                               textAlign: TextAlign.left,
@@ -375,48 +383,80 @@ class _RecentlyPlayedAudioPlayerState extends State<RecentlyPlayedAudioPlayer> {
                               overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 5),
-                            Text(
-                              currentSong.artist ?? 'Unknown Artist',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withOpacity(0.7),
-                              ),
-                              textAlign: TextAlign.left,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                            Row(
+                              children: [
+                                Text(
+                                  currentSong.artist ?? 'Unknown Artist',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.7),
+                                  ),
+                                  textAlign: TextAlign.left,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                SizedBox(
+                                  width: 5,
+                                ),
+                                Text(
+                                  currentSong.audioDuration ?? '0.00',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.7),
+                                  ),
+                                  textAlign: TextAlign.left,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.share,
-                          size: 28,
-                          color: Theme.of(context).colorScheme.onSurface,
+                      // Share button next to song info
+                      // GestureDetector(
+                      //   child: SvgPicture.asset(
+                      //     'assets/icons/circular_plus.svg',
+                      //     height: 16,
+                      //   ),
+                      //   onTap: () {
+                      //     _addSongToPlaylist(
+                      //         currentSong, currentSong.albumCoverUrl!);
+                      //   },
+                      // ),
+                      // Share button next to song info
+                      GestureDetector(
+                        child: SvgPicture.asset(
+                          'assets/icons/share_blue.svg',
+                          height: 16,
                         ),
-                        onPressed: _shareSong,
+                        onTap: _shareSong,
                       ),
                     ],
                   ),
                   const SizedBox(height: 30),
+                  // Seek Bar
                   Column(
                     children: [
                       SliderTheme(
                         data: SliderTheme.of(context).copyWith(
-                          trackHeight: 4.0,
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          trackHeight: 2.0,
+                          padding: EdgeInsets.symmetric(horizontal: 10),
                           thumbShape: const RoundSliderThumbShape(
-                              enabledThumbRadius: 8.0),
-                          overlayShape: const RoundSliderOverlayShape(
-                              overlayRadius: 16.0),
-                          activeTrackColor: Theme.of(context).primaryColor,
+                              enabledThumbRadius: 5.0),
+                          overlayShape:
+                              const RoundSliderOverlayShape(overlayRadius: 5.0),
+                          activeTrackColor: Color(0xff034DA2),
                           inactiveTrackColor: Theme.of(context)
                               .colorScheme
                               .surfaceContainerHighest,
-                          thumbColor: Theme.of(context).primaryColor,
+                          thumbColor: Color(0xff034DA2),
                           overlayColor:
                               Theme.of(context).primaryColor.withOpacity(0.2),
                         ),
@@ -425,6 +465,7 @@ class _RecentlyPlayedAudioPlayerState extends State<RecentlyPlayedAudioPlayer> {
                           min: 0.0,
                           max: _totalDuration.inSeconds.toDouble(),
                           onChanged: (value) {
+                            // Seek to the new position
                             _audioPlayer.seek(Duration(seconds: value.toInt()));
                           },
                         ),
@@ -452,22 +493,20 @@ class _RecentlyPlayedAudioPlayerState extends State<RecentlyPlayedAudioPlayer> {
                     ],
                   ),
                   const SizedBox(height: 30),
+                  // Playback Controls
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Expanded(
-                        child: IconButton(
-                          icon: Icon(
-                            Icons.shuffle,
-                            color: _isShuffleEnabled
+                        child: GestureDetector(
+                          child: SvgPicture.asset(
+                            'assets/icons/playback.svg',
+                            height: 20,
+                            color: _loopMode != LoopMode.off
                                 ? Theme.of(context).primaryColor
-                                : Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withOpacity(0.6),
+                                : Theme.of(context).colorScheme.onSurface,
                           ),
-                          iconSize: 28.0,
-                          onPressed: _toggleShuffle,
+                          onTap: _toggleRepeat,
                         ),
                       ),
                       Expanded(
@@ -476,14 +515,14 @@ class _RecentlyPlayedAudioPlayerState extends State<RecentlyPlayedAudioPlayer> {
                             Icons.skip_previous,
                             color: Theme.of(context).colorScheme.onSurface,
                           ),
-                          iconSize: 48.0,
+                          iconSize: 40.0,
                           onPressed: _skipToPrevious,
                         ),
                       ),
                       Container(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Theme.of(context).primaryColor,
+                          color: Color(0xff034DA2),
                         ),
                         child: isPlayerLoadingOrBuffering
                             ? const SizedBox(
@@ -509,32 +548,26 @@ class _RecentlyPlayedAudioPlayerState extends State<RecentlyPlayedAudioPlayer> {
                             Icons.skip_next,
                             color: Theme.of(context).colorScheme.onSurface,
                           ),
-                          iconSize: 48.0,
+                          iconSize: 40.0,
                           onPressed: _skipToNext,
                         ),
                       ),
                       Expanded(
-                        child: IconButton(
-                          icon: Icon(
-                            _loopMode == LoopMode.off
-                                ? Icons.repeat
-                                : _loopMode == LoopMode.all
-                                    ? Icons.repeat_on
-                                    : Icons.repeat_one_on,
-                            color: _loopMode != LoopMode.off
+                        child: GestureDetector(
+                          child: SvgPicture.asset(
+                            'assets/icons/shuffle.svg',
+                            height: 20,
+                            color: _isShuffleEnabled
                                 ? Theme.of(context).primaryColor
-                                : Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withOpacity(0.6),
+                                : Theme.of(context).colorScheme.onSurface,
                           ),
-                          iconSize: 28.0,
-                          onPressed: _toggleRepeat,
+                          onTap: _toggleShuffle,
                         ),
                       ),
                     ],
                   ),
-                  const Spacer(),
+                  // Removed the bottom navigation bar here
+                  const Spacer(), // Kept a spacer to push controls up if needed
                 ],
               ),
             ),

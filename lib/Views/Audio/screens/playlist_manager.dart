@@ -7,6 +7,7 @@ import 'package:anoopam_mission/Views/Audio/models/playlist.dart';
 import 'package:anoopam_mission/Views/Audio/models/song.dart';
 import 'package:anoopam_mission/Views/Audio/services/playlist_service.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_svg/svg.dart';
 
 class PlaylistManagerPage extends StatefulWidget {
   final List<AudioModel>?
@@ -193,6 +194,14 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.surface,
+        centerTitle: true,
+        leading: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SvgPicture.asset(
+            'assets/icons/back.svg',
+            height: 16,
+          ),
+        ),
         title: Text(
           widget.songsToAdd != null
               ? 'playlist.addTo'.tr()
@@ -201,14 +210,21 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
               color: Theme.of(context).colorScheme.onSurface, fontSize: 18),
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: Icon(Icons.search),
+          GestureDetector(
+            child: SvgPicture.asset(
+              'assets/icons/search_blue.svg',
+              height: 18,
+            ),
+            onTap: () {},
           ),
+          const SizedBox(width: 10),
           Padding(
             padding: const EdgeInsets.only(right: 15.0),
             child: GestureDetector(
-                child: Icon(Icons.add_circle_outline_rounded),
+                child: SvgPicture.asset(
+                  'assets/icons/circular_plus.svg',
+                  height: 18,
+                ),
                 onTap: _createNewPlaylist),
           )
         ],
@@ -253,9 +269,11 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
                                 _isGridView = !_isGridView;
                               });
                             },
-                            child: Icon(
-                              _isGridView ? Icons.list : Icons.grid_view,
-                              color: Theme.of(context).colorScheme.onSurface,
+                            child: SvgPicture.asset(
+                              _isGridView
+                                  ? 'assets/icons/grid_icon.svg'
+                                  : 'assets/icons/list_icon.svg',
+                              height: 18,
                             ),
                           ),
                         ],
