@@ -2,8 +2,10 @@
 
 import 'dart:io';
 import 'package:anoopam_mission/Views/Audio/models/song.dart';
+import 'package:anoopam_mission/Views/Audio/screens/album_detail_screen.dart';
 import 'package:anoopam_mission/Views/Audio/screens/audio_player_screen.dart';
 import 'package:anoopam_mission/Views/Audio/services/album_service_new.dart';
+import 'package:anoopam_mission/Views/Audio/services/audio_service_new.dart';
 import 'package:anoopam_mission/Views/Audio/services/playlist_service.dart';
 import 'package:anoopam_mission/Views/Audio/screens/playlist_manager.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +24,7 @@ class FavouritesPage extends StatefulWidget {
 
 class _FavouritesPageState extends State<FavouritesPage> {
   final PlaylistService _playlistService = PlaylistService();
+  final ApiService _apiService = ApiService();
   List<AudioModel> _favoriteSongs = [];
   bool _isLoading = true;
 
@@ -95,6 +98,43 @@ class _FavouritesPageState extends State<FavouritesPage> {
     }
 
     _showSnackBar('All favorite songs finished downloading.');
+  }
+
+  void _addSongToPlaylist(AudioModel song) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PlaylistManagerPage(
+          songsToAdd: [song],
+          playlistService: _playlistService,
+          onPlaylistsUpdated: _loadFavoriteSongs, // Refresh the page on return
+          albumCoverUrl: song.albumCoverUrl,
+        ),
+      ),
+    );
+  }
+
+  void _viewAlbum(AudioModel song) async {
+    try {
+      debugPrint(
+          'Album ID: \\${song.albumId}'); // Log the album ID for debugging
+
+      if (song.albumId == null) {
+        _showSnackBar('No album information available for this song.');
+        return;
+      }
+
+      final albumDetails = await _apiService.fetchAlbumDetails(song.albumId!);
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AlbumDetailScreen(album: albumDetails),
+        ),
+      );
+    } catch (e) {
+      _showSnackBar('Error navigating to album: $e');
+    }
   }
 
   void _downloadSong(AudioModel song) async {
@@ -188,11 +228,27 @@ class _FavouritesPageState extends State<FavouritesPage> {
               },
             ),
             ListTile(
+              leading: const Icon(Icons.playlist_add),
+              title: const Text('Add to Other Playlist'),
+              onTap: () {
+                Navigator.pop(context);
+                _addSongToPlaylist(song);
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.remove_circle_outline),
-              title: const Text('Remove from Favorites'),
+              title: const Text('Unlike'),
               onTap: () {
                 Navigator.pop(context);
                 _removeFromFavorites(song);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.album),
+              title: const Text('View Album'),
+              onTap: () {
+                Navigator.pop(context);
+                _viewAlbum(song);
               },
             ),
             ListTile(

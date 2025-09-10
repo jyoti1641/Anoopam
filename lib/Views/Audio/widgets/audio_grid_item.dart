@@ -48,46 +48,64 @@ class AudioGridItem extends StatelessWidget {
                 width: double.infinity,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    color:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
                     child: Icon(Icons.album,
-                        size: 60, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                        size: 60,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant),
                   );
                 },
               ),
             ),
           ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                 padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                child: Text(
-                  album.title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                    color: Colors.white,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
+          // Column(
+          //   mainAxisAlignment: MainAxisAlignment.end,
+          //   crossAxisAlignment: CrossAxisAlignment.start,
+          //   children: [
+          //     Container(
+          //       padding:
+          //           const EdgeInsets.symmetric(horizontal: 8.0, vertical: 20.0),
+          //       child: Text(
+          //         album.title,
+          //         style: const TextStyle(
+          //           fontWeight: FontWeight.w600,
+          //           fontSize: 16,
+          //           color: Colors.white,
+          //         ),
+          //         maxLines: 2,
+          //         overflow: TextOverflow.ellipsis,
+          //       ),
+          //     ),
+          //     // This could be used for artist name if available
+          //     // Text(
+          //     //   album.artist ?? 'Unknown Artist',
+          //     //   style: TextStyle(
+          //     //     fontSize: 12,
+          //     //     color: Colors.white.withOpacity(0.8),
+          //     //   ),
+          //     //   maxLines: 1,
+          //     //   overflow: TextOverflow.ellipsis,
+          //     // ),
+          //   ],
+          // ),
+          Positioned(
+            left: 8.0,
+            bottom: 40.0,
+            right: 8.0,
+            child: Text(
+              album.title,
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+                color: Colors.white,
               ),
-              // This could be used for artist name if available
-              // Text(
-              //   album.artist ?? 'Unknown Artist',
-              //   style: TextStyle(
-              //     fontSize: 12,
-              //     color: Colors.white.withOpacity(0.8),
-              //   ),
-              //   maxLines: 1,
-              //   overflow: TextOverflow.ellipsis,
-              // ),
-            ],
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
           Positioned(
-            bottom: 8.0,
-            right: 8.0,
+            bottom: 3.0,
+            right: 3.0,
             child: IconButton(
               icon: const Icon(Icons.share, color: Colors.white),
               onPressed: () {
