@@ -7,6 +7,7 @@ import 'package:anoopam_mission/Views/Audio/screens/create_new_playlist_screen.d
 import 'package:anoopam_mission/Views/Audio/screens/downloaded_file_screen.dart';
 import 'package:anoopam_mission/Views/Audio/screens/favorite_songs_screen.dart';
 import 'package:anoopam_mission/Views/Audio/screens/playlist_manager.dart';
+import 'package:anoopam_mission/Views/Audio/screens/recently_played_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:anoopam_mission/Views/Audio/models/playlist.dart';
@@ -53,6 +54,9 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
   void _showSongOptionsBottomSheet(RecentlyPlayedSongModel song) {
     showModalBottomSheet(
       context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(10.0)),
+      ),
       builder: (BuildContext context) {
         // Create a temporary AudioModel from the stored data
         final tempAudioModel = AudioModel(
@@ -71,20 +75,32 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          song.title,
-                          style: Theme.of(context).textTheme.titleMedium,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
+                ListTile(
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 15.0, vertical: 8),
+                  leading: ClipRRect(
+                    borderRadius: BorderRadius.circular(8.0),
+                    child: Image.network(
+                      song.albumCoverUrl ?? '',
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: 60,
+                          height: 60,
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.album,
+                              size: 50, color: Colors.grey),
+                        );
+                      },
+                    ),
                   ),
+                  title: Text(song.title,
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold)),
+                  subtitle: Text(song.artist ?? 'Unknown Artist',
+                      style: const TextStyle(fontSize: 14)),
                 ),
                 const Divider(height: 1),
                 Wrap(
@@ -571,11 +587,14 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
                     child: Icon(Icons.more_vert_outlined),
                   ),
                   onTap: () {
-                    // This is where you would handle playing the song.
-                    // You would need to navigate to the AudioPlayerScreen with the song details.
-                    // A simple approach is to get the full song details from the API using its ID.
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Playing "${song.title}"...')),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => RecentlyPlayedAudioPlayer(
+                          songs: songs,
+                          initialIndex: index,
+                        ),
+                      ),
                     );
                   },
                 );

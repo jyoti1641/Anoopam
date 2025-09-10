@@ -7,6 +7,7 @@ class AlbumModel {
   final String? artist;
   final String? albumDuration;
   final String? albumDate;
+  final List<String>? categories;
   final List<AudioModel>? songs;
 
   AlbumModel({
@@ -16,6 +17,7 @@ class AlbumModel {
     this.artist,
     this.albumDuration,
     this.albumDate,
+    this.categories,
     this.songs,
   });
 
@@ -28,6 +30,7 @@ class AlbumModel {
       'artist': artist,
       'albumDuration': albumDuration,
       'albumDate': albumDate,
+      'categories': categories,
       'songs': songs?.map((song) => song.toJson()).toList(),
     };
   }
@@ -41,6 +44,9 @@ class AlbumModel {
       artist: json['artist'] as String?,
       albumDuration: json['albumDuration'] as String?,
       albumDate: json['albumDate'] as String?,
+      categories: (json['categories'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
       songs: (json['songs'] as List?)
           ?.map((i) => AudioModel.fromStoredJson(i as Map<String, dynamic>))
           .toList(),
@@ -53,6 +59,9 @@ class AlbumModel {
       id: json['id'] as int,
       title: json['title'] as String,
       coverImage: json['cover_image'] as String,
+      categories: (json['categories'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
     );
   }
 
@@ -74,6 +83,9 @@ class AlbumModel {
       artist: json['artist'] as String?,
       albumDuration: json['album_duration'] as String?,
       albumDate: json['album_date'] as String?,
+      categories: (json['categories'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
       songs: parsedSongs,
     );
   }

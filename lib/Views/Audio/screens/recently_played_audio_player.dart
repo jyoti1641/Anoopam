@@ -1,62 +1,53 @@
 // lib/Views/Audio/screens/audio_player_screen.dart
+
+import 'package:anoopam_mission/Views/Audio/models/recently_played_model.dart';
 import 'package:anoopam_mission/Views/Audio/services/album_service_new.dart';
-import 'package:anoopam_mission/Views/Audio/services/playlist_service.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:just_audio/just_audio.dart'; // For AudioPlayer, ProcessingState, LoopMode, ShuffleMode
+import 'package:just_audio/just_audio.dart';
+import 'dart:io';
 
-// Assuming these models and services are correctly imported from their paths
-import 'package:anoopam_mission/Views/Audio/models/song.dart'; // Your AudioModel
-
-class AudioPlayerScreen extends StatefulWidget {
-  final List<AudioModel> songs;
+class RecentlyPlayedAudioPlayer extends StatefulWidget {
+  final List<RecentlyPlayedSongModel> songs; // Updated to use the new model
   final int initialIndex;
 
-  const AudioPlayerScreen({
+  const RecentlyPlayedAudioPlayer({
     super.key,
     required this.songs,
     this.initialIndex = 0,
   });
 
   @override
-  State<AudioPlayerScreen> createState() => _AudioPlayerScreenState();
+  State<RecentlyPlayedAudioPlayer> createState() =>
+      _RecentlyPlayedAudioPlayerState();
 }
 
-class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
-  // Reference to your centralized audio service
+class _RecentlyPlayedAudioPlayerState extends State<RecentlyPlayedAudioPlayer> {
   final AlbumServiceNew _audioService = AlbumServiceNew.instance;
-  late AudioPlayer
-      _audioPlayer; // Direct reference to just_audio player from the service
-  final PlaylistService _playlistService = PlaylistService();
+  late AudioPlayer _audioPlayer;
 
-  // Playback state variables
   bool _isPlaying = false;
   Duration _currentPosition = Duration.zero;
   Duration _totalDuration = Duration.zero;
   int _currentSongIndex = 0;
   bool _isShuffleEnabled = false;
-  LoopMode _loopMode = LoopMode.off; // just_audio's loop mode enum
+  LoopMode _loopMode = LoopMode.off;
 
   @override
   void initState() {
     super.initState();
-    _audioPlayer = _audioService.audioPlayer; // Get the player instance
-
-    // Initialize current song index (if starting fresh or resuming playlist)
+    _audioPlayer = _audioService.audioPlayer;
     _currentSongIndex = widget.initialIndex;
-
     _setupAudioPlayerListeners();
     _initializePlaylistAndPlay();
   }
 
   @override
   void dispose() {
-    // No need to dispose _audioPlayer here, as it's managed by AlbumServiceNew.
     super.dispose();
   }
 
-  // Method to parse "mm:ss" duration string into Duration object
   Duration _parseDuration(String durationString) {
     if (durationString.isEmpty) return Duration.zero;
     try {
@@ -72,7 +63,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     return Duration.zero;
   }
 
-  // Method to format Duration object into "mm:ss" string
   String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     final minutes = twoDigits(duration.inMinutes.remainder(60));
@@ -80,8 +70,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     return '$minutes:$seconds';
   }
 
-  // Helper to create a MediaItem from an AudioModel for just_audio_background
-  MediaItem _createMediaItem(AudioModel song) {
+  MediaItem _createMediaItem(RecentlyPlayedSongModel song) {
     final durationInMilliseconds =
         _parseDuration(song.audioDuration ?? '').inMilliseconds;
 
@@ -89,26 +78,20 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
       id: song.audioUrl,
       title: song.title,
       artist: song.artist,
-      // Use tryParse for URLs that might be malformed
-      album: song
-          .artist, // Using artist as a fallback for album, as AudioModel doesn't have album title
+      album: song.artist,
       duration: Duration(milliseconds: durationInMilliseconds),
     );
   }
 
   void _setupAudioPlayerListeners() {
-    // Listen to player state changes
     _audioPlayer.playerStateStream.listen((playerState) {
       if (mounted) {
         setState(() {
           _isPlaying = playerState.playing;
-          // You might want to react to playerState.processingState (loading, buffering, ready, etc.)
-          // for more granular UI feedback like showing a loading spinner.
         });
       }
     });
 
-    // Listen to position changes
     _audioPlayer.positionStream.listen((position) {
       if (mounted) {
         setState(() {
@@ -117,7 +100,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
       }
     });
 
-    // Listen to total duration changes (might update when a new song loads)
     _audioPlayer.durationStream.listen((duration) {
       if (mounted) {
         setState(() {
@@ -126,29 +108,22 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
       }
     });
 
-    // Listen to current song index changes in the playlist
     _audioPlayer.sequenceStateStream.listen((sequenceState) {
       if (mounted) {
         setState(() {
           if (sequenceState != null &&
               sequenceState.currentIndex != _currentSongIndex) {
             _currentSongIndex = sequenceState.currentIndex;
-            // Optionally, update duration when a new song starts playing in the playlist
             if (widget.songs.isNotEmpty &&
                 _currentSongIndex < widget.songs.length) {
               _totalDuration = _parseDuration(
                   widget.songs[_currentSongIndex].audioDuration ?? '');
-              _playlistService.saveSong(
-                widget.songs[_currentSongIndex],
-                widget.songs[_currentSongIndex].albumCoverUrl!,
-              );
             }
           }
         });
       }
     });
 
-    // Listen to loop mode changes
     _audioPlayer.loopModeStream.listen((loopMode) {
       if (mounted) {
         setState(() {
@@ -157,7 +132,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
       }
     });
 
-    // Listen to shuffle mode changes
     _audioPlayer.shuffleModeEnabledStream.listen((isEnabled) {
       if (mounted) {
         setState(() {
@@ -174,31 +148,20 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     }
 
     try {
-      // Create an AudioSource for each song in the playlist, now with MediaItem tag
       final audioSources = widget.songs
           .map((song) => AudioSource.uri(
                 Uri.parse(song.audioUrl),
-                tag: _createMediaItem(
-                    song), // Crucial fix: setting MediaItem tag
+                tag: _createMediaItem(song),
               ))
           .toList();
 
       final playlist = ConcatenatingAudioSource(children: audioSources);
 
-      // Set the audio source for the player.
-      // This will reset the player and load the new playlist.
       await _audioPlayer.setAudioSource(playlist,
           initialIndex: widget.initialIndex, initialPosition: Duration.zero);
 
-      // If playing the "Play All" button, it should start immediately.
-      // If coming from tapping a song in SongList, it also starts.
       _audioPlayer.play();
-      _playlistService.saveSong(
-        widget.songs[widget.initialIndex],
-        widget.songs[widget.initialIndex].albumCoverUrl!,
-      );
 
-      // Update total duration for the initially loaded song
       if (widget.songs.isNotEmpty &&
           widget.initialIndex < widget.songs.length) {
         setState(() {
@@ -208,7 +171,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
       }
     } catch (e) {
       debugPrint("Error loading audio source: $e");
-      // Show an error message to the user
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error loading audio: ${e.toString()}')),
       );
@@ -227,11 +189,10 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     if (_audioPlayer.hasNext) {
       await _audioPlayer.seekToNext();
     } else {
-      // Handle end of playlist (e.g., loop back or stop)
       if (_loopMode == LoopMode.all) {
-        await _audioPlayer.seek(Duration.zero, index: 0); // Loop to start
+        await _audioPlayer.seek(Duration.zero, index: 0);
       } else if (_loopMode == LoopMode.off) {
-        await _audioPlayer.stop(); // Stop playback
+        await _audioPlayer.stop();
       }
     }
   }
@@ -240,12 +201,11 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
     if (_audioPlayer.hasPrevious) {
       await _audioPlayer.seekToPrevious();
     } else {
-      // Handle start of playlist (e.g., loop back to end or stay)
       if (_loopMode == LoopMode.all) {
         await _audioPlayer.seek(Duration.zero,
-            index: _audioPlayer.sequence!.length - 1); // Loop to end
+            index: _audioPlayer.sequence!.length - 1);
       } else if (_loopMode == LoopMode.off) {
-        await _audioPlayer.seek(Duration.zero); // Rewind current song
+        await _audioPlayer.seek(Duration.zero);
       }
     }
   }
@@ -258,7 +218,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   }
 
   void _toggleRepeat() async {
-    // Cycle through LoopMode.off, LoopMode.all, LoopMode.one
     LoopMode newMode;
     if (_loopMode == LoopMode.off) {
       newMode = LoopMode.all;
@@ -285,6 +244,20 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
         'Check out the song "${currentSong.title}" by ${currentSong.artist} on AnoopaMission! ${currentSong.audioUrl}');
   }
 
+  // Helper to determine the correct image provider (network vs. file)
+  ImageProvider _getImageProvider(String? imageUrl) {
+    if (imageUrl != null && imageUrl.isNotEmpty) {
+      // Check if the URL is a local file path
+      if (!imageUrl.startsWith('http')) {
+        return FileImage(File(imageUrl));
+      }
+      // It's a network image
+      return NetworkImage(imageUrl);
+    }
+    // Return a fallback image provider
+    return const AssetImage('assets/images/default_playlist.png');
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentSong =
@@ -292,12 +265,15 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
             ? widget.songs[_currentSongIndex]
             : null;
 
-    // Determine if the player is currently loading/buffering.
-    // This is useful for showing a spinner over the play/pause button.
-    final bool isPlayerLoadingOrBuffering =
+    final isPlayerLoadingOrBuffering =
         _audioPlayer.playerState.processingState == ProcessingState.loading ||
             _audioPlayer.playerState.processingState ==
                 ProcessingState.buffering;
+
+    // Get the correct image provider for the current song
+    final ImageProvider? coverImageProvider = currentSong != null
+        ? _getImageProvider(currentSong.albumCoverUrl)
+        : null;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -334,39 +310,52 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(
+                  const SizedBox(
                     height: 15,
                   ),
-                  // Album Art
                   ClipRRect(
                     borderRadius: BorderRadius.circular(20.0),
-                    child: Image.network(
-                      currentSong
-                          .albumCoverUrl!, // Using imageUrl from AudioModel
-                      width: MediaQuery.of(context).size.width * 0.9,
-                      height: MediaQuery.of(context).size.width * 0.9,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          width: MediaQuery.of(context).size.width * 0.9,
-                          height: MediaQuery.of(context).size.width * 0.9,
-                          decoration: BoxDecoration(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(15.0),
-                          ),
-                          child: Icon(Icons.music_note,
-                              size: 100,
+                    child: coverImageProvider != null
+                        ? Image(
+                            image: coverImageProvider,
+                            width: MediaQuery.of(context).size.width * 0.9,
+                            height: MediaQuery.of(context).size.width * 0.9,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: MediaQuery.of(context).size.width * 0.9,
+                                height: MediaQuery.of(context).size.width * 0.9,
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .surfaceContainerHighest,
+                                  borderRadius: BorderRadius.circular(15.0),
+                                ),
+                                child: Icon(Icons.music_note,
+                                    size: 100,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant),
+                              );
+                            },
+                          )
+                        : Container(
+                            width: MediaQuery.of(context).size.width * 0.9,
+                            height: MediaQuery.of(context).size.width * 0.9,
+                            decoration: BoxDecoration(
                               color: Theme.of(context)
                                   .colorScheme
-                                  .onSurfaceVariant),
-                        );
-                      },
-                    ),
+                                  .surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(15.0),
+                            ),
+                            child: Icon(Icons.music_note,
+                                size: 100,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant),
+                          ),
                   ),
                   const SizedBox(height: 30),
-                  // Song Title and Artist
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -393,7 +382,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                                 color: Theme.of(context)
                                     .colorScheme
                                     .onSurface
-                                    .withValues(alpha: 0.7),
+                                    .withOpacity(0.7),
                               ),
                               textAlign: TextAlign.left,
                               maxLines: 1,
@@ -402,7 +391,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                           ],
                         ),
                       ),
-                      // Share button next to song info
                       IconButton(
                         icon: Icon(
                           Icons.share,
@@ -414,13 +402,12 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                     ],
                   ),
                   const SizedBox(height: 30),
-                  // Seek Bar
                   Column(
                     children: [
                       SliderTheme(
                         data: SliderTheme.of(context).copyWith(
                           trackHeight: 4.0,
-                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
                           thumbShape: const RoundSliderThumbShape(
                               enabledThumbRadius: 8.0),
                           overlayShape: const RoundSliderOverlayShape(
@@ -438,7 +425,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                           min: 0.0,
                           max: _totalDuration.inSeconds.toDouble(),
                           onChanged: (value) {
-                            // Seek to the new position
                             _audioPlayer.seek(Duration(seconds: value.toInt()));
                           },
                         ),
@@ -466,7 +452,6 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                     ],
                   ),
                   const SizedBox(height: 30),
-                  // Playback Controls
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -479,7 +464,7 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                                 : Theme.of(context)
                                     .colorScheme
                                     .onSurface
-                                    .withValues(alpha: 0.6),
+                                    .withOpacity(0.6),
                           ),
                           iconSize: 28.0,
                           onPressed: _toggleShuffle,
@@ -535,14 +520,13 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                                 ? Icons.repeat
                                 : _loopMode == LoopMode.all
                                     ? Icons.repeat_on
-                                    : Icons
-                                        .repeat_one_on, // repeat_one_on for LoopMode.one
+                                    : Icons.repeat_one_on,
                             color: _loopMode != LoopMode.off
                                 ? Theme.of(context).primaryColor
                                 : Theme.of(context)
                                     .colorScheme
                                     .onSurface
-                                    .withValues(alpha: 0.6),
+                                    .withOpacity(0.6),
                           ),
                           iconSize: 28.0,
                           onPressed: _toggleRepeat,
@@ -550,38 +534,10 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                       ),
                     ],
                   ),
-                  // Removed the bottom navigation bar here
-                  const Spacer(), // Kept a spacer to push controls up if needed
+                  const Spacer(),
                 ],
               ),
             ),
     );
   }
-
-  // The _buildNavItem method is no longer needed since the bottom navigation is removed.
-  // Widget _buildNavItem(IconData icon, String label, int index, {bool isActive = false}) {
-  //   return GestureDetector(
-  //     onTap: () {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text('$label tapped! (Navigation Placeholder)')),
-  //       );
-  //     },
-  //     child: Column(
-  //       mainAxisAlignment: MainAxisAlignment.center,
-  //       children: [
-  //         Icon(
-  //           icon,
-  //           color: isActive ? Theme.of(context).primaryColor : Colors.grey[600],
-  //         ),
-  //         Text(
-  //           label,
-  //           style: TextStyle(
-  //             color: isActive ? Theme.of(context).primaryColor : Colors.grey[600],
-  //             fontSize: 12,
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
 }

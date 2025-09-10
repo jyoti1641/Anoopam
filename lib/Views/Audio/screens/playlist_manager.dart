@@ -350,33 +350,15 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
                                         ),
                                       ),
                                       title: Text(playlist.name),
-                                      // subtitle: Text('playlist.songCount'
-                                      //     .tr(namedArgs: {
-                                      //   'count': playlist.songs.length.toString()
-                                      // })),
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          if (widget.songsToAdd != null)
-                                            IconButton(
-                                              icon: const Icon(Icons.add),
-                                              onPressed: () =>
+                                      trailing: widget.songsToAdd != null
+                                          ? Radio<String>(
+                                              value: playlist.name,
+                                              groupValue: null,
+                                              onChanged: (_) =>
                                                   _addSongToExistingPlaylist(
                                                       playlist),
-                                              tooltip: 'playlist.addSongTooltip'
-                                                  .tr(),
-                                            ),
-                                          // IconButton(
-                                          //   icon: Icon(Icons.delete,
-                                          //       color: Theme.of(context)
-                                          //           .colorScheme
-                                          //           .error),
-                                          //   onPressed: () =>
-                                          //       _deletePlaylist(playlist.name),
-                                          //   tooltip: 'playlist.deleteTooltip'.tr(),
-                                          // ),
-                                        ],
-                                      ),
+                                            )
+                                          : null,
                                     ),
                                   ),
                                 );

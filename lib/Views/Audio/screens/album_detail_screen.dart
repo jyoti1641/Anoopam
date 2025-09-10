@@ -50,11 +50,12 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
     );
   }
 
-  void _showAlbumMenu(BuildContext context, List<AudioModel> songs) {
+  void _showAlbumMenu(
+      BuildContext context, List<AudioModel> songs, AlbumModel albumDetails) {
     showModalBottomSheet(
       context: context,
       builder: (context) {
-        return _buildAlbumBottomSheet(context, songs);
+        return _buildAlbumBottomSheet(context, songs, albumDetails);
       },
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
@@ -115,7 +116,8 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
     );
   }
 
-  Widget _buildAlbumBottomSheet(BuildContext context, List<AudioModel> songs) {
+  Widget _buildAlbumBottomSheet(
+      BuildContext context, List<AudioModel> songs, AlbumModel albumDetails) {
     return SingleChildScrollView(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -124,57 +126,46 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8.0),
-                  child: Image.network(
-                    widget.album.coverImage,
-                    width: 80,
-                    height: 80,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        width: 80,
-                        height: 80,
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.album,
-                            size: 50, color: Colors.grey),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(width: 16.0),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.album.title,
-                        style: const TextStyle(
-                          fontSize: 20.0,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4.0),
-                      // Text(
-                      //   widget.album.artist ?? 'Unknown Artist',
-                      //   style: TextStyle(
-                      //     fontSize: 16.0,
-                      //     color: Colors.grey[700],
-                      //   ),
-                      //   maxLines: 1,
-                      //   overflow: TextOverflow.ellipsis,
-                      // ),
-                    ],
-                  ),
-                ),
-              ],
+          ListTile(
+            contentPadding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 8),
+            leading: ClipRRect(
+              borderRadius: BorderRadius.circular(8.0),
+              child: Image.network(
+                albumDetails.coverImage,
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: 60,
+                    height: 60,
+                    color: Colors.grey[300],
+                    child:
+                        const Icon(Icons.album, size: 50, color: Colors.grey),
+                  );
+                },
+              ),
+            ),
+            title: Text(
+              albumDetails.title,
+              style: const TextStyle(
+                fontSize: 16.0,
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            subtitle: Text(
+              (albumDetails.categories != null &&
+                      albumDetails.categories!.isNotEmpty)
+                  ? albumDetails.categories!.first
+                  : 'Bhajan',
+              style: const TextStyle(
+                fontSize: 14.0,
+                fontWeight: FontWeight.w400,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
           const Divider(),
@@ -347,7 +338,8 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> {
                         IconButton(
                           icon: const Icon(Icons.more_vert),
                           iconSize: 28.0,
-                          onPressed: () => _showAlbumMenu(context, songs),
+                          onPressed: () =>
+                              _showAlbumMenu(context, songs, albumDetails),
                         ),
                         IconButton(
                           icon: const Icon(Icons.play_circle_fill),

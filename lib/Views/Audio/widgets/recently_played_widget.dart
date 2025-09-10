@@ -2,6 +2,7 @@
 
 import 'package:anoopam_mission/Views/Audio/models/recently_played_model.dart';
 import 'package:anoopam_mission/Views/Audio/screens/audio_player_screen.dart';
+import 'package:anoopam_mission/Views/Audio/screens/recently_played_audio_player.dart';
 import 'package:anoopam_mission/Views/Audio/services/playlist_service.dart';
 import 'package:flutter/material.dart';
 import 'package:anoopam_mission/Views/Audio/models/album.dart';
@@ -55,15 +56,15 @@ class RecentlyPlayedWidget extends StatelessWidget {
                     final song = songs[index];
                     return GestureDetector(
                       onTap: () {
-                        //  Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (context) => AudioPlayerScreen(
-                        //       songs: songs,
-                        //       initialIndex: index,
-                        //     ),
-                        //   ),
-                        // );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RecentlyPlayedAudioPlayer(
+                              songs: songs,
+                              initialIndex: index,
+                            ),
+                          ),
+                        );
                       },
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 7.0),

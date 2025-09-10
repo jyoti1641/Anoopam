@@ -99,6 +99,20 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
     );
   }
 
+  ImageProvider _getImageProvider(String? imageUrl) {
+    if (imageUrl != null && imageUrl.isNotEmpty) {
+      // Check if the URL is a local file path
+      if (!imageUrl.startsWith('http')) {
+        return FileImage(File(imageUrl));
+      }
+      // It's a network image
+      return NetworkImage(imageUrl);
+    }
+    // Return a placeholder image provider if no image is available
+    return const AssetImage(
+        'assets/images/default_playlist.png'); // Replace with a local asset path
+  }
+
   void _showPlaylistMenu(BuildContext context) {
     if (_currentPlaylist == null) return;
     showModalBottomSheet(
@@ -115,8 +129,9 @@ class _PlaylistDetailScreenState extends State<PlaylistDetailScreen> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8.0),
-                    child: Image.network(
-                      _currentPlaylist!.coverImageUrl!,
+                    child: Image(
+                      image:
+                          _getImageProvider(_currentPlaylist!.coverImageUrl!),
                       width: 50,
                       height: 50,
                       fit: BoxFit.cover,
