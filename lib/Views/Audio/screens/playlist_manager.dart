@@ -196,7 +196,7 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
         backgroundColor: Theme.of(context).colorScheme.surface,
         centerTitle: true,
         leading: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(18.0),
           child: SvgPicture.asset(
             'assets/icons/back.svg',
             height: 16,
@@ -204,8 +204,8 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
         ),
         title: Text(
           widget.songsToAdd != null
-              ? 'playlist.addTo'.tr()
-              : 'playlist.manage'.tr(),
+              ? 'audio.add_to_playlist'.tr()
+              : 'audio.playlists'.tr(),
           style: TextStyle(
               color: Theme.of(context).colorScheme.onSurface, fontSize: 18),
         ),
@@ -259,7 +259,7 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Created Playlists',
+                            'audio.created_playlists'.tr(),
                             style: TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.w600),
                           ),
@@ -278,9 +278,18 @@ class _PlaylistManagerPageState extends State<PlaylistManagerPage> {
                           ),
                         ],
                       ),
-                      Text(
-                        '${_userPlaylists.length.toString()} Playlists',
-                        style: TextStyle(fontSize: 14),
+                      Row(
+                        children: [
+                          Text(
+                            '${_userPlaylists.length.toString()}',
+                            style: TextStyle(fontSize: 14),
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            'audio.playlists'.tr(),
+                            style: TextStyle(fontSize: 14),
+                          ),
+                        ],
                       )
                     ],
                   ),

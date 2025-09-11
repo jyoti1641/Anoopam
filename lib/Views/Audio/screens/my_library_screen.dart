@@ -290,9 +290,10 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('audio.myLibraryTitle'.tr()),
+        centerTitle: true,
         backgroundColor: Theme.of(context).colorScheme.surface,
         leading: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(18.0),
           child: SvgPicture.asset(
             'assets/icons/back.svg',
             height: 16,
@@ -570,7 +571,7 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4.0),
               child: Text(
-                'audio.recentlyPlayedTitle'.tr(),
+                'audio.RecentlyPlayed'.tr(),
                 style: Theme.of(context)
                     .textTheme
                     .titleLarge

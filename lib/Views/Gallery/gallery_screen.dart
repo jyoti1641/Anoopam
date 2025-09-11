@@ -1,5 +1,6 @@
 // lib/screens/gallery_screen.dart
 
+import 'package:anoopam_mission/Views/Gallery/event_screen.dart';
 import 'package:anoopam_mission/Views/Gallery/gallery_wallpapers_screen.dart';
 import 'package:anoopam_mission/Views/Gallery/sahebji_darshan_screen.dart';
 import 'package:anoopam_mission/Views/Gallery/sahebji_gallery_screen.dart';
@@ -73,6 +74,11 @@ class GalleryScreenState extends State<GalleryScreen> {
         name: 'Wallpaper',
         thumbnailUrl: 'assets/images/wallpaper.png',
       ),
+      Album(
+        id: 0,
+        name: 'Events',
+        thumbnailUrl: 'assets/images/events.png',
+      ),
     ];
 
     try {
@@ -80,11 +86,14 @@ class GalleryScreenState extends State<GalleryScreen> {
       if (!mounted) return;
       setState(() {
         // Filter out any API albums that have the same name as the special ones
-        final filteredApiAlbums = fetchedAlbums.where((album) =>
-            album.name != 'Thakorji Darshan' &&
-            album.name != 'Sahebji Darshan' &&
-            album.name != 'Sahebji Gallery' &&
-            album.name != 'Wallpaper');
+        final filteredApiAlbums = fetchedAlbums
+            .where((album) =>
+                album.name != 'Thakorji Darshan' &&
+                album.name != 'Sahebji Darshan' &&
+                album.name != 'Sahebji Gallery' &&
+                album.name != 'Wallpaper' &&
+                album.name != 'Events')
+            .toList();
 
         // Combine the local special albums with the filtered API albums
         _albums = [...specialAlbums, ...filteredApiAlbums];
@@ -141,6 +150,12 @@ class GalleryScreenState extends State<GalleryScreen> {
               builder: (context) => const GalleryWallpapersScreen()),
         );
         break;
+      case 'Events':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const EventsScreen()),
+        );
+        break;
       default:
         // For all other dynamic albums
         Navigator.push(
@@ -161,9 +176,11 @@ class GalleryScreenState extends State<GalleryScreen> {
       backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       appBar: AppBar(
         title: Text('gallery.title'.tr()),
+        leading: Icon(Icons.arrow_back),
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
         elevation: 1,
+        centerTitle: true,
         surfaceTintColor: Theme.of(context).appBarTheme.backgroundColor,
       ),
       body: Column(
@@ -226,7 +243,8 @@ class GalleryScreenState extends State<GalleryScreen> {
                                       album.name == 'Thakorji Darshan' ||
                                           album.name == 'Sahebji Darshan' ||
                                           album.name == 'Sahebji Gallery' ||
-                                          album.name == 'Wallpaper';
+                                          album.name == 'Wallpaper' ||
+                                          album.name == 'Events';
                                   return GestureDetector(
                                     onTap: () => _onAlbumTap(album),
                                     child: Container(

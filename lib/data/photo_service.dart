@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'package:anoopam_mission/models/album.dart';
+import 'package:anoopam_mission/models/event.dart';
 import 'package:anoopam_mission/models/photo.dart';
 import 'package:anoopam_mission/models/sahebji_darshan_models.dart';
 import 'package:anoopam_mission/models/sahebji_ocassions.dart';
@@ -206,6 +207,31 @@ class PhotoApiService {
       return WallpaperDetails.fromJson(json.decode(response.body));
     } else {
       throw Exception('Failed to load wallpaper details for ID: $id');
+    }
+  }
+
+  Future<List<EventAlbum>> getEvents({int page = 1}) async {
+    final response =
+        await http.get(Uri.parse('$anoopamBaseUrl/events/?page=$page'));
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      final List<dynamic> eventData = data['data'];
+      return eventData.map((json) => EventAlbum.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load events');
+    }
+  }
+
+  Future<EventDetails> getEventDetails(int eventId) async {
+    final response =
+        await http.get(Uri.parse('$anoopamBaseUrl/events/$eventId'));
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      return EventDetails.fromJson(data);
+    } else {
+      throw Exception('Failed to load event details');
     }
   }
 

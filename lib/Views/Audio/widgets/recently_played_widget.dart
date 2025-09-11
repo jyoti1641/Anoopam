@@ -4,6 +4,7 @@ import 'package:anoopam_mission/Views/Audio/models/recently_played_model.dart';
 import 'package:anoopam_mission/Views/Audio/screens/audio_player_screen.dart';
 import 'package:anoopam_mission/Views/Audio/screens/recently_played_audio_player.dart';
 import 'package:anoopam_mission/Views/Audio/services/playlist_service.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:anoopam_mission/Views/Audio/models/album.dart';
 import 'package:anoopam_mission/Views/Audio/models/song.dart';
@@ -35,10 +36,10 @@ class RecentlyPlayedWidget extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
+            Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.0),
               child: Text(
-                'Recently Played',
+                'audio.RecentlyPlayed'.tr(),
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),

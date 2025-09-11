@@ -2,6 +2,7 @@
 
 import 'dart:io';
 import 'package:anoopam_mission/Views/Audio/services/playlist_service.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:path_provider/path_provider.dart';
@@ -168,7 +169,7 @@ class _DownloadedFilesScreenState extends State<DownloadedFilesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Downloads'),
+        title: Text('audio.downloads'.tr()),
         backgroundColor: Theme.of(context).colorScheme.surface,
         centerTitle: true,
         leading: Padding(
@@ -222,7 +223,7 @@ class _DownloadedFilesScreenState extends State<DownloadedFilesScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Downloaded',
+                      Text('audio.downloaded'.tr(),
                           style: TextStyle(
                               fontSize: 20, fontWeight: FontWeight.w600)),
                       TextButton.icon(
@@ -232,8 +233,8 @@ class _DownloadedFilesScreenState extends State<DownloadedFilesScreen> {
                           size: 30,
                           color: Color(0xff034DA2),
                         ),
-                        label: const Text(
-                          'PLAY ALL',
+                        label: Text(
+                          'audio.playAll'.tr(),
                           style: TextStyle(
                               color: Color(0xff034DA2),
                               fontSize: 16,

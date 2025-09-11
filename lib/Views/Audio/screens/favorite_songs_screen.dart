@@ -283,7 +283,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Favourites'),
+        title: const Text('audio.favorites').tr(),
         centerTitle: true,
         leading: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -334,11 +334,19 @@ class _FavouritesPageState extends State<FavouritesPage> {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('Liked Audios',
+                                  Text('audio.liked_audios'.tr(),
                                       style: TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold)),
-                                  Text('${_favoriteSongs.length} tracks'),
+                                  Row(
+                                    children: [
+                                      Text('${_favoriteSongs.length}'),
+                                      SizedBox(
+                                        width: 4,
+                                      ),
+                                      Text('audio.tracks'.tr()),
+                                    ],
+                                  ),
                                 ],
                               ),
                               Row(
