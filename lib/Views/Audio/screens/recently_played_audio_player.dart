@@ -262,23 +262,6 @@ class _RecentlyPlayedAudioPlayerState extends State<RecentlyPlayedAudioPlayer> {
     return const AssetImage('assets/images/default_playlist.png');
   }
 
-// void _addSongToPlaylist(
-//       RecentlyPlayedSongModel song, String coverimage) async {
-//     Navigator.push(
-//       context,
-//       MaterialPageRoute(
-//         builder: (context) => PlaylistManagerPage(
-//           songsToAdd: [song],
-//           playlistService: PlaylistService(),
-//           onPlaylistsUpdated: () {},
-//           albumCoverUrl: coverimage,
-//         ),
-//       ),
-//     ).then((_) {
-//       // No need to call _initializeFavoriteStatus()
-//     });
-//   }
-
   @override
   Widget build(BuildContext context) {
     final currentSong =
@@ -367,7 +350,8 @@ class _RecentlyPlayedAudioPlayerState extends State<RecentlyPlayedAudioPlayer> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Expanded(
+                      Flexible(
+                        flex: 7,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -419,24 +403,17 @@ class _RecentlyPlayedAudioPlayerState extends State<RecentlyPlayedAudioPlayer> {
                           ],
                         ),
                       ),
+
                       // Share button next to song info
-                      // GestureDetector(
-                      //   child: SvgPicture.asset(
-                      //     'assets/icons/circular_plus.svg',
-                      //     height: 16,
-                      //   ),
-                      //   onTap: () {
-                      //     _addSongToPlaylist(
-                      //         currentSong, currentSong.albumCoverUrl!);
-                      //   },
-                      // ),
-                      // Share button next to song info
-                      GestureDetector(
-                        child: SvgPicture.asset(
-                          'assets/icons/share_blue.svg',
-                          height: 16,
+                      Flexible(
+                        flex: 1,
+                        child: GestureDetector(
+                          child: SvgPicture.asset(
+                            'assets/icons/share_blue.svg',
+                            height: 18,
+                          ),
+                          onTap: _shareSong,
                         ),
-                        onTap: _shareSong,
                       ),
                     ],
                   ),

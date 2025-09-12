@@ -488,7 +488,7 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
     );
   }
 
-  Widget _buildCountCard(String title, IconData icon, int count,
+  Widget _buildCountCard(String title, Widget icon, int count,
       VoidCallback onTap, String subtitle) {
     return GestureDetector(
       onTap: onTap,
@@ -499,13 +499,12 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
             side: BorderSide(color: Theme.of(context).colorScheme.outline)),
         elevation: 0,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10),
+          padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 15),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon,
-                  size: 28, color: Theme.of(context).colorScheme.primary),
+              icon,
               const SizedBox(height: 8),
               Text(
                 title,

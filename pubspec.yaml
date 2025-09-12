@@ -117,6 +117,7 @@ flutter:
     - assets/images/thakorji_darshan_thumbnail.png
     - assets/images/sahebji_darshan_thumbnail.png
     - assets/images/sahebji_gallery_thumbnail.png
+    - assets/images/events.png
     
     #Logos
     - assets/logos/Mission.png

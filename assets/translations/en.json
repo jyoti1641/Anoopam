@@ -484,7 +484,11 @@
   "playlist": {
     "manage": "Manage Playlists",
     "createNew": "Create New Playlist",
-    "noneFound": "No playlists found"
+    "noneFound": "No playlists found",
+    "givePlaylistName": "Give your playlist name",
+    "myPlaylist": "My Playlist",
+    "create": "CREATE",
+    "cancel": "CANCEL"
   },
   "album": {
     "addToPlaylist": "Add to a Playlist",

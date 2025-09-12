@@ -458,12 +458,13 @@
     "watchHistoryCleared": "જોવાયેલા વિડિઓ ઇતિહાસ સાફ કર્યો"
   },
   "playlist": {
-    "songCount": "{count} ગીતો",
-    "addSongTooltip": "પ્લેલિસ્ટમાં ગીત ઉમેરો",
-    "deleteTooltip": "પ્લેલિસ્ટ કાઢી નાખો",
     "manage": "પ્લેલિસ્ટ મેનેજ કરો",
     "createNew": "નવી પ્લેલિસ્ટ બનાવો",
-    "noneFound": "કોઈ પ્લેલિસ્ટ મળી નથી"
+    "noneFound": "કોઈ પ્લેલિસ્ટ મળી નથી",
+    "givePlaylistName": "તમારી પ્લેલિસ્ટનું નામ આપો",
+    "myPlaylist": "મારી પ્લેલિસ્ટ",
+    "create": "બનાવો",
+    "cancel": "રદ કરો"
   },
   "album": {
     "searchSongs": "ગીતો શોધો..."

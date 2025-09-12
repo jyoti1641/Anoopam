@@ -388,7 +388,8 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Expanded(
+                      Flexible(
+                        flex: 7,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -441,23 +442,29 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                         ),
                       ),
                       // Share button next to song info
-                      GestureDetector(
-                        child: SvgPicture.asset(
-                          'assets/icons/circular_plus.svg',
-                          height: 16,
+                      Flexible(
+                        flex: 1,
+                        child: GestureDetector(
+                          child: SvgPicture.asset(
+                            'assets/icons/circular_plus.svg',
+                            height: 18,
+                          ),
+                          onTap: () {
+                            _addSongToPlaylist(
+                                currentSong, currentSong.albumCoverUrl!);
+                          },
                         ),
-                        onTap: () {
-                          _addSongToPlaylist(
-                              currentSong, currentSong.albumCoverUrl!);
-                        },
                       ),
                       // Share button next to song info
-                      GestureDetector(
-                        child: SvgPicture.asset(
-                          'assets/icons/share_blue.svg',
-                          height: 16,
+                      Flexible(
+                        flex: 1,
+                        child: GestureDetector(
+                          child: SvgPicture.asset(
+                            'assets/icons/share_blue.svg',
+                            height: 18,
+                          ),
+                          onTap: _shareSong,
                         ),
-                        onTap: _shareSong,
                       ),
                     ],
                   ),

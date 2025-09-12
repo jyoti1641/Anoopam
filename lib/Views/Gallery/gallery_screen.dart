@@ -82,24 +82,12 @@ class GalleryScreenState extends State<GalleryScreen> {
     ];
 
     try {
-      final fetchedAlbums = await _repository.getAlbums();
-      if (!mounted) return;
-      setState(() {
-        // Filter out any API albums that have the same name as the special ones
-        final filteredApiAlbums = fetchedAlbums
-            .where((album) =>
-                album.name != 'Thakorji Darshan' &&
-                album.name != 'Sahebji Darshan' &&
-                album.name != 'Sahebji Gallery' &&
-                album.name != 'Wallpaper' &&
-                album.name != 'Events')
-            .toList();
-
-        // Combine the local special albums with the filtered API albums
-        _albums = [...specialAlbums, ...filteredApiAlbums];
-        _filteredAlbums = _albums;
-      });
+      // Instead of calling the repository, directly use the special albums.
+      // The old line `final fetchedAlbums = await _repository.getAlbums();` is no longer needed.
+      _albums = specialAlbums;
+      _filteredAlbums = _albums;
     } catch (e) {
+      // Error handling is still good practice, even if the API call is removed.
       if (!mounted) return;
       setState(() {
         _errorMessage = e.toString();

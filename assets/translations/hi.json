@@ -440,12 +440,13 @@
     "watchHistoryCleared": "देखे गए वीडियो इतिहास साफ़ किया गया"
   },
   "playlist": {
-    "songCount": "{count} गाने",
-    "addSongTooltip": "प्लेलिस्ट में गाना जोड़ें",
-    "deleteTooltip": "प्लेलिस्ट हटाएं",
     "manage": "प्लेलिस्ट प्रबंधित करें",
     "createNew": "नई प्लेलिस्ट बनाएं",
-    "noneFound": "कोई प्लेलिस्ट नहीं मिली"
+    "noneFound": "कोई प्लेलिस्ट नहीं मिली",
+    "givePlaylistName": "अपनी प्लेलिस्ट का नाम दें",
+    "myPlaylist": "मेरी प्लेलिस्ट",
+    "create": "बनाएं",
+    "cancel": "रद्द करें"
   },
   "album": {
     "searchSongs": "गाने खोजें..."
