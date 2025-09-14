@@ -81,12 +81,6 @@ class _FavouritesPageState extends State<FavouritesPage> {
       return;
     }
 
-    var status = await Permission.storage.request();
-    if (status.isDenied) {
-      _showSnackBar('Storage permission is required to download files.');
-      return;
-    }
-
     _showSnackBar('Downloading all favorite songs...');
 
     for (var song in _favoriteSongs) {
@@ -139,13 +133,11 @@ class _FavouritesPageState extends State<FavouritesPage> {
   // }
 
   void _downloadSong(AudioModel song) async {
-    var status = await Permission.storage.request();
-    if (status.isDenied) {
-      _showSnackBar('Storage permission is required.');
-      return;
-    }
     try {
-      await _playlistService.downloadAndSaveSong(song);
+      // No permission request is needed here because the PlaylistService
+      // correctly uses getExternalStorageDirectory(), which saves files to
+      // an app-specific directory.
+      await PlaylistService().downloadAndSaveSong(song);
       _showSnackBar('"${song.title}" downloaded.');
     } catch (e) {
       _showSnackBar('Error downloading "${song.title}": $e');

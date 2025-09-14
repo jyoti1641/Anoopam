@@ -181,12 +181,10 @@ class _SongListState extends State<SongList> {
   }
 
   void _downloadSong(AudioModel song) async {
-    var status = await Permission.storage.request();
-    if (status.isDenied) {
-      _showSnackBar('Storage permission is required.');
-      return;
-    }
     try {
+      // No permission request is needed here because the PlaylistService
+      // correctly uses getExternalStorageDirectory(), which saves files to
+      // an app-specific directory.
       await PlaylistService().downloadAndSaveSong(song);
       _showSnackBar('"${song.title}" downloaded.');
     } catch (e) {
